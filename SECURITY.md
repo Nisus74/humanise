@@ -21,4 +21,4 @@ Out of scope: a user's own voice profile and corpus (these stay in their fork an
 - Secrets are scanned on every commit (gitleaks via pre-commit) and again in CI.
 - The project ships zero runtime dependencies; a check in pre-commit and CI fails if a dependency or lockfile appears.
 - GitHub Actions are pinned to commit SHAs and updated by Dependabot.
-- CodeQL scans the JavaScript and Python on each push and pull request.
+- CodeQL scans the JavaScript and Python on every push and pull request, and weekly, once the repository is public.
