@@ -34,3 +34,7 @@ skill/config.yml
 
 # Personal, per-developer Claude guidance (not shared)
 CLAUDE.local.md
+
+# Personal, per-developer Claude Code settings (not shared). The committed
+# .claude/settings.json is the team-wide config; this one stays yours.
+.claude/settings.local.json

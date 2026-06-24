@@ -1,0 +1,38 @@
+name: security
+
+on:
+  push:
+  pull_request:
+
+# Least privilege: these jobs only need to read the repo.
+permissions:
+  contents: read
+
+jobs:
+  secret-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0 # full history, so gitleaks scans past commits too
+      - name: Scan for secrets (gitleaks)
+        uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2
+        # Free for public repos. Private or org repos need a GITLEAKS_LICENSE secret.
+
+  dependency-review:
+    # Flags vulnerable or newly added dependencies on pull requests.
+    # humanise is zero-dependency today; this guards future additions.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4
+
+  no-new-deps:
+    # Enforces the zero-dependency invariant for EVERY contributor, whatever AI
+    # tool or editor they use. The local AI-tool hooks only cover their own tool;
+    # this and the pre-commit hook run for everyone. Node is preinstalled on the runner.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - run: node scripts/check-no-deps.mjs

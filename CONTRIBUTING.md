@@ -45,6 +45,16 @@ Promote only if the change improves at least one split and degrades neither. CI 
 - **A channel playbook.** Add a row to the mapping table or a full entry in `skill/references/channel-playbooks.md`.
 - **A slop word or a 2026-era tell.** Add it to `skill/references/ai-slop-dictionary.md` and the relevant list in `writing_checks.py`, with a fixture.
 
+## Security
+
+humanise works across AI tools (Claude Code, Codex, Gemini, Antigravity and others), so the protections that matter run at the git and CI layers, not inside any one tool.
+
+After cloning, turn on the local hooks once with `pre-commit install`. Every commit is then checked by [gitleaks](https://github.com/gitleaks/gitleaks) (no secrets) and a zero-dependency check (the CLI stays Node built-ins, the checker stays Python stdlib). CI runs the same checks on every push and pull request, plus dependency review and CodeQL, so anything missed locally is still caught before merge.
+
+Never commit a real credential; use an environment variable or a gitignored file. To add a dependency, change `scripts/check-no-deps.mjs` in the same PR so the call is explicit and reviewed. Claude Code users also get these guards as instant local feedback via `.claude/`; other tools rely on the git and CI layers.
+
+To report a vulnerability, follow [SECURITY.md](SECURITY.md).
+
 ## Code of conduct
 
 This project follows the [Contributor Covenant](CODE_OF_CONDUCT.md). Be kind and constructive.

@@ -1,0 +1,7 @@
+version: 2
+updates:
+  # Keep GitHub Actions patched. Pinning versions goes stale without this.
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
