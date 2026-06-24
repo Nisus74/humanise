@@ -20,9 +20,10 @@ jobs:
         # Free for public repos. Private or org repos need a GITLEAKS_LICENSE secret.
 
   dependency-review:
-    # Flags vulnerable or newly added dependencies on pull requests.
-    # humanise is zero-dependency today; this guards future additions.
-    if: github.event_name == 'pull_request'
+    # Flags vulnerable or newly added dependencies on pull requests. Needs a
+    # public repo or GitHub Advanced Security, so it auto-skips while the repo
+    # is private and runs once it is public.
+    if: github.event_name == 'pull_request' && github.event.repository.visibility == 'public'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
