@@ -1,0 +1,42 @@
+{
+  "name": "humanise",
+  "version": "0.1.0",
+  "description": "Make AI-generated writing sound like a specific human wrote it. A shared anti-slop engine plus your own voice profile (body and soul). Cross-platform skill and CLI.",
+  "author": "Nisus74",
+  "license": "MIT",
+  "homepage": "https://github.com/Nisus74/humanise",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Nisus74/humanise.git"
+  },
+  "keywords": [
+    "writing",
+    "ai",
+    "anti-slop",
+    "skills",
+    "voice",
+    "editor",
+    "humanise",
+    "claude",
+    "codex",
+    "gemini"
+  ],
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "bin": {
+    "humanise": "cli/bin/cli.js"
+  },
+  "files": [
+    "cli/",
+    "dist/",
+    "skill/",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "prepack": "node scripts/build.mjs",
+    "test": "cd skill/evals/assertions && python3 selftest.py"
+  }
+}

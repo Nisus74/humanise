@@ -1,0 +1,18 @@
+# Copy to config.yml and edit. The engine reads this; your profile/ holds your voice.
+
+name: "Your Name"
+dialect: en-AU          # en-AU | en-US | en-GB  (see references/dialects/)
+default_register: 3     # 1 raw ... 5 ceremonial (see references/tone-register.md)
+profile_dir: profile    # where your filled-in profile lives (cp from profile.template or profile.example)
+
+# Channels you write in most. The skill leads with these; the full set and a
+# nearest-neighbour mapping for anything unlisted live in references/channel-playbooks.md.
+channels:
+  - linkedin
+  - email
+  - blog
+  - slack
+
+# Optional: phrases you personally never use, treated as severity-1 for your writing.
+# The shared slop list is references/ai-slop-dictionary.md; this is your overlay.
+custom_slop: []

@@ -1,0 +1,78 @@
+{
+  "skill_name": "humanise",
+  "notes": "Generic example evals for the open-source engine. Neutral prompts; replace or extend with your own. selftest.py validates that every assertion here resolves. One comparison per assertion; advisory ones report but don't gate. Audience tags: any non-'us' tag uses the AusE spelling gate by default.",
+  "evals": [
+    {
+      "id": 1,
+      "channel": "linkedin",
+      "workflow": "generate",
+      "audience_tag": "aus-network",
+      "prompt": "Write a LinkedIn post (120-180 words) about a specific lesson from a recent project. Tie it to your own experience, not generic wisdom.",
+      "assertions": [
+        { "name": "no_em_dashes", "check": "em_dash_count == 0" },
+        { "name": "no_severity_1_slop", "check": "severity_1_slop_count == 0" },
+        { "name": "dialect_clean", "check": "ause_spelling_clean == true" },
+        { "name": "ause_visible", "check": "ause_count >= 2", "advisory": true },
+        { "name": "contractions_present", "check": "contraction_types >= 3", "advisory": true },
+        { "name": "structural_tells_bounded", "check": "structural_tell_count <= 1" },
+        { "name": "word_count_in_range", "check": "120 <= word_count <= 200" }
+      ]
+    },
+    {
+      "id": 2,
+      "channel": "email",
+      "workflow": "generate",
+      "audience_tag": "us-client",
+      "prompt": "Draft a 150-word follow-up email to a US client after an intro call, asking for a technical deep-dive in the next two weeks. Direct, US register.",
+      "assertions": [
+        { "name": "no_em_dashes", "check": "em_dash_count == 0" },
+        { "name": "us_spelling", "check": "us_spelling_clean == true" },
+        { "name": "no_dialect_leak", "check": "ause_count == 0" },
+        { "name": "no_slop_openers", "check": "no_slop_openers == true" },
+        { "name": "word_count_in_range", "check": "100 <= word_count <= 200" }
+      ]
+    },
+    {
+      "id": 3,
+      "channel": "slack",
+      "workflow": "generate",
+      "audience_tag": "internal-team",
+      "prompt": "Write a 1-3 sentence Slack message flagging that a deadline slipped to next week and why. Casual, direct.",
+      "assertions": [
+        { "name": "no_em_dashes", "check": "em_dash_count == 0" },
+        { "name": "word_count_short", "check": "word_count <= 60" },
+        { "name": "no_slop_openers", "check": "no_slop_openers == true" }
+      ]
+    },
+    {
+      "id": 4,
+      "channel": "blog",
+      "workflow": "generate",
+      "audience_tag": "aus-public",
+      "prompt": "Write a 700-word blog post that argues one specific position drawn from your work. Opinionated, specific examples.",
+      "assertions": [
+        { "name": "no_em_dashes", "check": "em_dash_count == 0" },
+        { "name": "no_severity_1_slop", "check": "severity_1_slop_count == 0" },
+        { "name": "dialect_clean", "check": "ause_spelling_clean == true" },
+        { "name": "ause_visible", "check": "ause_count >= 2", "advisory": true },
+        { "name": "structural_tells_bounded", "check": "structural_tell_count <= 2" },
+        { "name": "word_count_in_range", "check": "550 <= word_count <= 900" }
+      ]
+    },
+    {
+      "id": 5,
+      "channel": "board-paper",
+      "workflow": "generate",
+      "audience_tag": "aus-board",
+      "formal_channel": true,
+      "prompt": "Draft a 2-page board paper: state of the business plus one decision sought. Professional, no hype, numbers throughout.",
+      "assertions": [
+        { "name": "no_em_dashes", "check": "em_dash_count == 0" },
+        { "name": "no_severity_1_slop", "check": "severity_1_slop_count == 0" },
+        { "name": "dialect_clean", "check": "ause_spelling_clean == true" },
+        { "name": "no_i_this_openers", "check": "i_this_opener_count == 0" },
+        { "name": "word_count_in_range", "check": "600 <= word_count <= 1400" }
+      ]
+    }
+  ]
+}
