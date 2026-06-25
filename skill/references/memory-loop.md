@@ -77,7 +77,7 @@ Store per the standard `project` memory template. Include deadline, stakeholder,
 
 ## When to read from memory during writing tasks
 
-At the start of any humanise task (standalone or dependency mode):
+At the start of any humanise task:
 
 1. Scan `MEMORY.md` for entries matching `feedback_writing_*`, `user_voice_*`, and `project_writing_*`.
 2. Load relevant ones into the working context. Relevance = matches the current channel, audience, or topic.

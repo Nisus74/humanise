@@ -6,6 +6,8 @@ Real samples of your writing, annotated so the skill learns what your voice actu
 
 5 to 10 samples to start, more over time. Rough is fine; this is ground truth, not a showcase. Prioritise the channels you write most and the ones most prone to sounding AI-generated (LinkedIn, blog, email, anything public).
 
+The fastest way to collect them is `scripts/corpus-questionnaire.md`: it walks you channel by channel with concrete fetch prompts and drafts the annotations by asking, so you correct rather than write from scratch.
+
 One file per sample, named `YYYY-MM-DD-short-description.md`, using `SAMPLE_TEMPLATE.md`. Drop them into a subfolder per channel (`linkedin/`, `email/`, `blog/`, etc.) so the generator can spot per-channel habits.
 
 ## How it's used

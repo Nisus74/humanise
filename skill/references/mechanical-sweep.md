@@ -24,15 +24,15 @@ The script covers items 1-5 and 8-9, plus slop openers and the spaced-hyphen das
 
 ## Pass two (structural level)
 
-The script detects most of these; your job is adjudication, not detection. Start from the `structural_density` block, open every hit, and decide which stay and which get rewritten. The re-read still matters for the patterns no regex catches (balanced pairs, paragraph shape, the "assembled from parts" feeling). Full taxonomy in `structural-tells.md`.
+The script detects most of these; your job is adjudication, not detection. Start from the `structural_density` block, open every hit, and decide which stay and which get rewritten. The re-read still matters for the patterns no regex catches (a single balanced pair, paragraph shape, the "assembled from parts" feeling); the script now flags the balanced-pair *cluster* and the transition-opener *pileup*, but the single instances are still yours. Full taxonomy in `structural-tells.md`.
 
 1. **Binary contrast, all forms.** Obvious ("It's not X, it's Y"), moderate ("Not just X, but Y"), inline ("X, not Y"), and negated-copula ("isn't X, it's Y"). Empty contrasts get rewritten every time: state the positive claim only. Load-bearing contrasts are budgeted by density: one on a short piece, roughly one per 600 words across a long document, measured globally. Apply the removal test in `structural-tells.md`. For detector-bound copy (sales, formal submissions), drop even the load-bearing form. The most common failure is diagnosing a contrast in the source and reproducing its shape in the rewrite with different words.
 2. **Triples.** Three parallel items, with or without "and" ("fast, reliable, and secure"; "Ship fast, learn deeply, repeat endlessly"). Break the parallelism: cut one, fold two together, or vary the lengths. Two reads as a pair; three scans as AI cadence.
-3. **Balanced pairs.** Mirrored positive/negative clauses ("When X, we succeed. When not-X, we fail."). Rewrite asymmetrically so the clauses differ in shape and length.
+3. **Balanced pairs.** Mirrored positive/negative clauses ("When X, we succeed. When not-X, we fail."). Rewrite asymmetrically so the clauses differ in shape and length. The script flags a *cluster* (three or more consecutive mirrored sentences) as advisory (`balanced_pairs`); a single pair is still a manual catch.
 4. **Dramatic fragmentation.** One-word sentences stacked for effect ("Ship. Learn. Repeat."). Fine for a LinkedIn post with the user's explicit sign-off; otherwise convert to prose.
-5. **Transition slop.** "But here's where it gets interesting", "And here's the kicker". Delete and let the next sentence carry itself.
+5. **Transition slop.** "But here's where it gets interesting", "And here's the kicker". Delete and let the next sentence carry itself. The quieter cousin, a pileup of sentence-initial connectives (Moreover, Furthermore, Additionally), is a hard flag (`transition_pileup`) at two or more.
 6. **Summary sentences.** The final "In other words..." or "The takeaway is..." that restates the point. Trust the reader. Delete.
-7. **Sentence templates.** "The [role] don't [verb]. They [elevated verb]." Replace with a specific observation.
+7. **Sentence templates.** "The [role] don't [verb]. They [elevated verb]." Replace with a specific observation. The script catches this form and the cross-sentence reframe ("This isn't X. It's Y.") via `structural_tell_total`; the noun-dependent templates ("X is the new Y") stay manual.
 8. **Sentence rhythm.** Three consecutive sentences within five words of each other in length. Break the pattern. (Tripwire, advisory in the script.)
 9. **Specificity check.** Every claim needs a concrete detail. If a sentence would work with different nouns swapped in, add a number, a name, an example, or delete.
 10. **Paragraph shape.** All paragraphs the same length and shape is itself a tell. Vary deliberately. (Advisory.)
@@ -50,12 +50,16 @@ The script detects most of these; your job is adjudication, not detection. Start
 | Curly quotes | `curly_quotes` (medium-aware) |
 | Severity-1 slop | `severity_1_slop` |
 | Severity 2-3 slop | `severity_2_3_slop` |
-| Binary contrast (all four forms) | `binary_contrasts_per_1000`, `structural_tell_total` |
+| Binary contrast (all forms) + cross-sentence reframe | `binary_contrasts_per_1000`, `structural_tell_total` |
+| Transition-opener pileup | `transition_openers` (hard at 2+) |
 | Fragment-colon labels | `fragment_colon_labels` |
-| Self-narrated honesty | `self_narrated_honesty` |
+| Self-narrated honesty (incl. "real talk", "not gonna lie") | `self_narrated_honesty` |
 | Academic register | `academic_register` |
+| Approximation hedges | `approximation_hedges` (advisory) |
+| Dead metaphor-verb cluster | `dead_verb_density` (advisory) |
+| Balanced-pair cluster | `balanced_pairs` (advisory) |
 | Sentence rhythm | `sentence_profile` (advisory) |
 | Burstiness | `burstiness_cov` (advisory) |
 | AusE visible / contractions | `ause_visible`, `contractions` (advisory tripwires) |
 
-Items 6, 7 (pass one) and 3, 9, 10 (pass two) have no script field and need the manual re-read.
+Items 6, 7 (pass one) and 9 (pass two: specificity) have no script field and need the manual re-read; item 3 (balanced pairs) and item 10 (paragraph shape) are now partly covered (the cluster, advisory) but the single instance is still manual.

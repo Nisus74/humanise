@@ -73,6 +73,35 @@
         { "name": "no_i_this_openers", "check": "i_this_opener_count == 0" },
         { "name": "word_count_in_range", "check": "600 <= word_count <= 1400" }
       ]
+    },
+    {
+      "id": 6,
+      "channel": "cover-letter",
+      "workflow": "generate",
+      "audience_tag": "aus-employer",
+      "formal_channel": true,
+      "prompt": "Draft a 250-word cover letter for a role you'd genuinely want. Open on the object or the work, not 'I'. Specific, no template phrasing.",
+      "assertions": [
+        { "name": "no_em_dashes", "check": "em_dash_count == 0" },
+        { "name": "no_severity_1_slop", "check": "severity_1_slop_count == 0" },
+        { "name": "no_i_this_openers", "check": "i_this_opener_count == 0" },
+        { "name": "no_slop_openers", "check": "no_slop_openers == true" },
+        { "name": "word_count_in_range", "check": "180 <= word_count <= 320" }
+      ]
+    },
+    {
+      "id": 7,
+      "channel": "report",
+      "workflow": "generate",
+      "audience_tag": "aus-internal",
+      "medium": "docx",
+      "prompt": "Write a 200-word executive summary for a word-processed (docx) report. Curly quotes are the human default here; keep them consistent. Specific, plain.",
+      "assertions": [
+        { "name": "no_em_dashes", "check": "em_dash_count == 0" },
+        { "name": "dialect_clean", "check": "ause_spelling_clean == true" },
+        { "name": "no_slop_openers", "check": "no_slop_openers == true" },
+        { "name": "word_count_in_range", "check": "150 <= word_count <= 280" }
+      ]
     }
   ]
 }

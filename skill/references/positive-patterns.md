@@ -4,6 +4,15 @@ The rest of this skill is mostly negative: what to avoid, what to cut, what flag
 
 Aim to hit two or three of these patterns in any piece longer than a paragraph. One positive move makes writing feel competent; three or four make it feel alive.
 
+**How to use a move.** Each move is a thing to *do*, paired with a self-check question: what the read-aloud pass in `SKILL.md` Step 5 asks to decide whether the draft needs it. Four families map to an advisory signal in `writing_checks.py`, the script's way of pointing you back here:
+
+- specificity moves map to `specificity_density`
+- opinion moves map to `stance_signal`
+- story-before-lesson maps to `generic_to_specific`
+- plain verbs over fancy copulas map to `copula_ratio`
+
+These signals flag where a draft *looks* thin; they never fail it (they ride the advisory rail, so there is no number to game). The self-check is how you decide whether texture is genuinely missing or fine for this piece. The rest of the moves are a manual menu: pick two or three on purpose, never all of them, or the moves become their own tic.
+
 ---
 
 ## Specificity moves
@@ -13,6 +22,8 @@ Aim to hit two or three of these patterns in any piece longer than a paragraph. 
 "We reduced latency from 840ms to 120ms" beats "We dramatically reduced latency." The number does the work.
 
 When you don't have a number, use a specific example instead. "The calibration takes the time it takes to make a coffee" beats "The calibration is quick."
+
+Self-check: does every claim carry a number, a name, or a concrete example, or is it an abstraction with nothing to hold? Signal: `specificity_density` (advisory). Do not pad with fake numbers to clear it; that is the manufactured-precision tell.
 
 ### Named things beat generic things
 
@@ -31,6 +42,8 @@ If you're illustrating a claim with examples, one well-developed example is more
 ### Editorialising beats describing
 
 "The data shows X" is weaker than "The data shows X, and it's worse than I expected." The editorial word ("worse", "better", "surprising", "obvious") signals there's a human making judgements.
+
+Self-check: is there a word in here that shows a person reached a judgement, or is it a neutral readout anyone could have written? Signal: `stance_signal` (advisory; suppressed for status updates and board papers, where neutral is correct).
 
 ### Disagreeing in print beats hedged agreement
 
@@ -129,6 +142,14 @@ If you're naming three distinct things, a list works. If you're developing one a
 Lead with the specific story or example. Let the reader extract the lesson. Then confirm the lesson briefly at the end.
 
 Don't start with "The lesson here is X. Here's a story that illustrates X." That's AI template shape.
+
+Self-check: does the piece open on an abstract general claim and then reach for a specific to prop it up? Lead with the specific instead. Signal: `generic_to_specific` (advisory).
+
+### Plain verbs beat fancy copulas
+
+"The audit layer is the bottleneck" beats "The audit layer constitutes the bottleneck." "X is Y" and "X has Y" are not too plain; reaching for "serves as", "represents", "constitutes" is dissertation register dressed as precision.
+
+Self-check: would a plain "is" or "has" carry this sentence? Then use it. Signal: `copula_ratio` (advisory).
 
 ---
 

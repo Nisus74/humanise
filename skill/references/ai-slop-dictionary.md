@@ -162,6 +162,8 @@ These aren't exclusively AI tells but they make writing sound corporate and gene
 | unpack                         | explain, break down                         |
 | at the intersection of X and Y | (describe the actual connection)            |
 
+**Metaphor density.** Beyond any single banned word, watch the *cluster* of dead motion-verbs: "pivot the narrative, unlock value, double down, amplify reach, leverage the platform". No one of these is always wrong, but three or four in a piece is the metaphor-soup tell, prose that moves a lot and says little. `writing_checks.py` (`dead_verb_density`) flags three or more as **advisory** (the per-word budget owns single uses); the fix is to name the concrete action each metaphor is standing in for. The verb list is deliberately narrow (it excludes literal-prone verbs like navigate, surface, dive), so a flag is worth a look.
+
 ---
 
 ## Severity 4: Verbose phrases
@@ -270,6 +272,10 @@ Words that add syllables but not meaning. Delete on sight unless they're genuine
 
 "very", "really" (as intensifiers), "quite", "rather", "somewhat", "fairly", "actually" (when not contrasting), "basically", "just" (as filler), "simply" (as filler)
 
+### Approximation hedges
+
+Filler approximations that soften a number without earning the softness: "roughly", "sort of", "kind of", "pretty much", "more or less", "give or take", "approximately", and "about / around" sitting on a number ("about 40 sites"). One is fine and often human (a parenthetical aside in your own voice uses "roughly"). A cluster is the tell: AI hedges quantities reflexively where a person either knows the number or says they don't. `writing_checks.py` (`approximation_hedges`) flags density here as **advisory only**, never a hard fail, because a single use is a sanctioned move. Fix the cluster: give the real number, or name why you can't, and drop the rest.
+
 ---
 
 ## Severity 2.5: Newer 2026 vocabulary
@@ -318,7 +324,7 @@ The fix is always the plain verb. If "operationalises a falsifier" is the senten
 
 ## Severity 2: Self-narrated honesty
 
-The writing captioning its own candour instead of just being candid: "Pipeline honesty:", "the honest version of", "an honest label", "to be honest", "the straightforward statement is", "candidly", "let me be clear". It's a trust-me reflex models reach for and people almost never use, because a person being straight doesn't announce it. `writing_checks.py` (`self_narrated_honesty`) flags every instance; the target is zero.
+The writing captioning its own candour instead of just being candid: "Pipeline honesty:", "the honest version of", "an honest label", "to be honest", "the straightforward statement is", "candidly", "let me be clear", and the casual-register cousins "real talk", "not gonna lie", "no sugarcoating". It's a trust-me reflex models reach for and people almost never use, because a person being straight doesn't announce it. `writing_checks.py` (`self_narrated_honesty`) flags every instance; the target is zero.
 
 | Phrase                                                   | Why it flags                              | Instead                        |
 | -------------------------------------------------------- | ----------------------------------------- | ------------------------------ |
@@ -329,6 +335,7 @@ The writing captioning its own candour instead of just being candid: "Pipeline h
 | let's be clear / let me be clear                         | stalls before a point                     | (make the point)               |
 | the truth is / truth be told / the real answer is        | melodramatic reveal                       | (just reveal it)               |
 | candidly / frankly / plainly put                         | tells the reader how to read you          | (delete)                       |
+| real talk / not gonna lie / no sugarcoating / keeping it real | performed candour, a register down    | (drop the preamble; say it)    |
 
 The rewrite rule is one move: delete the caption, keep the claim. "Pipeline honesty: Intake has no live deals today" becomes "Intake has no live deals today." The fact does the work; the label only flagged that a model wrote it.
 

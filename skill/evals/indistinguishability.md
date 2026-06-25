@@ -2,6 +2,10 @@
 
 The assertion battery measures rule compliance. This test measures the actual goal: whether skill output is distinguishable from the user's real writing. Run it after every corpus expansion and after any significant rule change.
 
+## The voiceprint tripwire (when to spend the judge)
+
+This test needs a model and human attention, so it's costly to run on every draft. The voiceprint distance (`humanise voiceprint <file>`, or the `voiceprint_distance` block when a baseline is passed to `writing_checks.py`) is the cheap, automatable early-warning that says *when* a draft is worth the judge. It scores a draft's distance from your corpus distribution as a mean per-feature z-score, advisory only. A draft sitting near your baseline is probably fine; a draft that drifts far is the one to put in front of the judge. The voiceprint is a tripwire, not a verdict: it flags candidates, the blind judge below decides. Never tune a draft to lower its distance; reporting a distance is not the same as naming a target, and tuning to it is the detector-gaming the loop forbids.
+
 ## Protocol
 
 1. **Pick the channel.** Use a channel with at least two real samples in `profile/voice-corpus/`. Hold one sample out; it must not appear in the drafting context.

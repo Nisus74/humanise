@@ -2,6 +2,7 @@
 // humanise CLI. No dependencies; Node built-ins only.
 //   humanise install [--provider=<name>] [--global]   install the skill into your AI tool
 //   humanise detect <file> [dialect] [medium]          run the deterministic checker (Python)
+//   humanise voiceprint <file> | --build               score/build voice distance (Python)
 //   humanise init                                      scaffold a voice profile
 //   humanise build                                     rebuild dist/ from skill/
 import {
@@ -76,6 +77,54 @@ function detect(args) {
   process.exit(r.status ?? 0);
 }
 
+function profileBase() {
+  const cwd = process.cwd();
+  for (const rel of Object.values(PROVIDERS)) {
+    if (existsSync(join(cwd, rel, "profile")) || existsSync(join(cwd, rel, "profile.template"))) {
+      return join(cwd, rel);
+    }
+  }
+  return SKILL;
+}
+
+function voiceprint(args) {
+  const script = join(SKILL, "scripts", "build_voiceprint.py");
+  const base = profileBase();
+  const baseline =
+    (args.find((a) => a.startsWith("--baseline=")) || "").split("=")[1] ||
+    join(base, "profile", "voiceprint.json");
+  if (args.includes("--build")) {
+    const corpus =
+      (args.find((a) => a.startsWith("--corpus=")) || "").split("=")[1] ||
+      join(base, "profile", "voice-corpus");
+    if (!existsSync(corpus)) {
+      console.error(`No corpus at ${corpus}. Run "/humanise init" and add samples first.`);
+      process.exit(1);
+    }
+    const r = spawnSync("python3", [script, "--corpus", corpus, "--out", baseline], { stdio: "inherit" });
+    if (r.error) {
+      console.error("Could not run the voiceprint builder. Python 3 is required.");
+      process.exit(1);
+    }
+    process.exit(r.status ?? 0);
+  }
+  const file = args.filter((a) => !a.startsWith("-"))[0];
+  if (!file) {
+    console.error("Usage: humanise voiceprint <file> [--baseline=<path>]  |  humanise voiceprint --build [--corpus=<dir>]");
+    process.exit(1);
+  }
+  if (!existsSync(baseline)) {
+    console.error(`No voiceprint baseline at ${baseline}. Build one first: humanise voiceprint --build`);
+    process.exit(1);
+  }
+  const r = spawnSync("python3", [script, "--score", file, "--baseline", baseline], { stdio: "inherit" });
+  if (r.error) {
+    console.error("Could not run the voiceprint scorer. Python 3 is required.");
+    process.exit(1);
+  }
+  process.exit(r.status ?? 0);
+}
+
 function init() {
   const cwd = process.cwd();
   let base = null;
@@ -100,8 +149,8 @@ function init() {
   console.log(`Created ${dest} from profile.template.`);
   console.log("Next:");
   console.log("  1. Write profile/soul.md (see profile.example/soul.md for the bar).");
-  console.log("  2. Add 5-10 writing samples to profile/voice-corpus/.");
-  console.log("  3. Generate your fingerprint with scripts/generate-fingerprint.md.");
+  console.log("  2. Collect 5-10 samples fast with scripts/corpus-questionnaire.md (into profile/voice-corpus/).");
+  console.log("  3. Generate your fingerprint with scripts/generate-fingerprint.md (also builds the voiceprint).");
 }
 
 function build() {
@@ -119,6 +168,8 @@ function help() {
 Usage:
   npx humanise install [--provider=<name>] [--global]   install the skill into your AI tool
   npx humanise detect <file> [dialect] [medium]         run the deterministic checker (no LLM)
+  npx humanise voiceprint <file>                        score a draft's distance from your voice (advisory)
+  npx humanise voiceprint --build                       build the baseline from profile/voice-corpus
   npx humanise init                                     scaffold your voice profile
   npx humanise build                                    rebuild dist/ from skill/
   npx humanise version
@@ -136,6 +187,9 @@ switch (cmd) {
   case "detect":
   case "check":
     detect(args);
+    break;
+  case "voiceprint":
+    voiceprint(args);
     break;
   case "init":
     init();

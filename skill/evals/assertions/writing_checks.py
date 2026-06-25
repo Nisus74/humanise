@@ -194,6 +194,19 @@ META_CANDOUR = [
     "the real answer is",
     "the plain truth",
     "frankly",
+    # 2026 manufactured-authenticity idioms: performed candour borrowed from
+    # casual speech. Same trust-me reflex, a register down. Fixed idioms, so the
+    # false-positive risk stays low (see ai-slop-dictionary Severity 2).
+    "no sugarcoating",
+    "real talk",
+    "straight talk",
+    "let me be real",
+    "i'll be real",
+    "not gonna lie",
+    "not going to lie",
+    "i won't lie",
+    "no bs",
+    "keeping it real",
 ]
 # Noun-phrase form: "Pipeline honesty:", "One honesty:" etc. matched by regex.
 META_CANDOUR_LABEL_RE = re.compile(r"\b[A-Z][a-z]+\s+honesty\s*:", re.MULTILINE)
@@ -405,6 +418,15 @@ TRIPLE_NO_AND_RE = re.compile(
 SENTENCE_TEMPLATE_RE = re.compile(
     r"The\s+(?:best\s+)?\w+s?\s+don'?t\s+\w+[^.]*\.\s+They\s+\w+"
 )
+# Cross-sentence reframe template: "This isn't X. It's Y." The negate-then-reveal
+# antithesis split across a sentence boundary, which the comma-form contrast
+# regexes miss (they forbid a full stop in the gap). The reveal must be a copula
+# (It's / That's / It is) so a plain continuation ("This isn't working. It needs a
+# fix.") does not false-fire. Bounded gap keeps it from spanning unrelated text.
+SENTENCE_REFRAME_RE = re.compile(
+    r"\b(?:This|That|It)\s+(?:isn'?t|is not|doesn'?t|does not|won'?t|will not)\b"
+    r"[^.?!]{0,60}[.?!]\s+(?:It'?s|That'?s|It is|That is|They'?re)\b"
+)
 # Transition-slop connectors. Module-level so other passes can reuse the list.
 TRANSITION_SLOP = [
     "but here's where",
@@ -414,6 +436,101 @@ TRANSITION_SLOP = [
     "here's what's interesting",
 ]
 TRANSITION_SLOP_RES = [re.compile(p, re.IGNORECASE) for p in TRANSITION_SLOP]
+
+# Sentence-initial discourse-marker pileup. One formal connective opening a
+# sentence is fine; two or more across a piece is the essay-bot drumbeat
+# (Moreover... Furthermore... Additionally...). The blunt registers this skill
+# targets almost never stack them, so the cluster is a hard tell.
+TRANSITION_OPENERS = [
+    "moreover",
+    "furthermore",
+    "additionally",
+    "consequently",
+    "notably",
+    "importantly",
+]
+TRANSITION_OPENER_RES = [
+    re.compile(rf"^{re.escape(w)}\b", re.IGNORECASE) for w in TRANSITION_OPENERS
+]
+
+# Filler approximations. High frequency in AI hedging, sparse in committed human
+# prose. A single one is often a sanctioned aside ("roughly three weeks longer"),
+# so this is advisory and flags density, never a single use. 'about'/'around'
+# hedge only when numeric-adjacent ("about 40 sites"), matched separately so
+# "talk about" / "think about" do not count.
+APPROX_HEDGES = [
+    "sort of",
+    "kind of",
+    "pretty much",
+    "more or less",
+    "give or take",
+    "roughly",
+    "thereabouts",
+    "approximately",
+]
+APPROX_NUMERIC_RE = re.compile(r"\b(?:about|around|some)\s+\d", re.IGNORECASE)
+
+# Dead metaphor / business-motion verbs. Individually some pass the per-word slop
+# budget; clustered, the prose reads as pure AI ("pivot the narrative, unlock
+# value, double down, amplify reach"). Advisory density view only; the per-word
+# hard checks own the single-word budget. Literal-prone verbs (navigate, surface,
+# dive, drive) are deliberately excluded to hold the false-positive rate down.
+DEAD_VERBS = [
+    "leverage",
+    "unlock",
+    "unpack",
+    "supercharge",
+    "turbocharge",
+    "double down",
+    "tap into",
+    "pivot",
+    "amplify",
+    "ignite",
+    "unleash",
+    "move the needle",
+    "level up",
+]
+
+# Subordinators that, repeated at the head of adjacent same-length sentences,
+# make the false-symmetry "balanced pair" anaphora ("When X, we Y. When A, we B.").
+BALANCED_SUBORDINATORS = {"when", "if", "where", "whether"}
+
+# ---------------------------------------------------------------------------
+# Presence-of-human signals (Phase 2). Unlike the rest of the engine, these flag
+# the ABSENCE of human texture (concrete detail, a point of view) so a clean but
+# anonymous draft gets named. All ADVISORY by construction: they report and feed
+# the self-critique, never the pass/fail, so the model is never rewarded for
+# tuning to them (self-harness-loop.md, the Goodhart limit).
+# ---------------------------------------------------------------------------
+
+# Plain "to be" / "to have". AI prose dodges these for fancier substitutes; a low
+# plain share next to a cluster of substitutes reads as dissertation register.
+COPULA_PLAIN_RE = re.compile(
+    r"\b(?:is|are|was|were|be|been|being|am|isn't|aren't|wasn't|weren't|"
+    r"has|have|had|hasn't|haven't|hadn't)\b",
+    re.IGNORECASE,
+)
+COPULA_AVOIDERS = [
+    "serves as", "serve as", "stands as", "stand as", "functions as",
+    "function as", "acts as", "act as", "represents", "represent",
+    "constitutes", "constitute", "comprises", "comprise", "embodies", "boasts",
+]
+
+# Opinion / judgement markers. Their PRESENCE is the good signal; the detector
+# flags their ABSENCE in a longer non-neutral piece. Over-inclusive on purpose:
+# a broad list means we rarely cry wolf on genuinely opinionated prose.
+STANCE_MARKERS = [
+    "i think", "i believe", "i'd argue", "i would argue", "i reckon",
+    "i suspect", "in my view", "my take", "i'm convinced", "i'd cut",
+    "i love", "i'd bet", "to my mind", "i doubt", "i'd rather",
+    "surprising", "surprised", "obvious", "wrong", "harder", "easier",
+    "better", "worse", "smarter", "underrated", "overrated", "impressive",
+    "disappointing", "great", "terrible", "messy", "brilliant", "broken",
+]
+
+# A capitalised token used to spot proper nouns (skip the sentence-initial word).
+PROPER_NOUN_RE = re.compile(r"^[A-Z][A-Za-z]+")
+NUMERIC_RE = re.compile(r"\b\d+(?:[.,]\d+)?%?")
 
 
 def _binary_contrast_hits(draft):
@@ -819,6 +936,10 @@ def structural_tell_count(draft, contrast_hits=None):
     if template:
         hits.append("sentence_template")
 
+    # Cross-sentence reframe: "This isn't X. It's Y."
+    if SENTENCE_REFRAME_RE.search(draft):
+        hits.append("sentence_reframe")
+
     return {
         "count": len(hits),
         "pass": len(hits) <= 1,
@@ -932,6 +1053,213 @@ def academic_register(draft):
     }
 
 
+def transition_pileup(draft):
+    """Sentence-initial discourse-marker pileup (Moreover / Furthermore /
+    Additionally / Consequently / Notably / Importantly). One opener is a normal
+    connective; two or more across a piece is the essay-bot drumbeat the blunt
+    registers this skill targets almost never produce. Hard fail at the cluster
+    threshold (>= 2); a single opener passes so a legitimate connective is not
+    punished."""
+    hits = []
+    for s in _sentences(draft):
+        for pat in TRANSITION_OPENER_RES:
+            if pat.match(s):
+                hits.append(s.split()[0].rstrip(",").lower())
+                break
+    return {
+        "count": len(hits),
+        "pass": len(hits) < 2,
+        "found": hits,
+        "details": f"{len(hits)} sentence-initial transition opener(s): {hits} "
+        "(cluster threshold 2)"
+        if hits
+        else "no sentence-initial transition pileup",
+    }
+
+
+def approximation_hedges(draft):
+    """Advisory: filler approximations (roughly, sort of, kind of, pretty much,
+    more or less, about 40). High frequency in AI hedging, sparse in committed
+    prose, but a single one is often a sanctioned aside, so this flags density,
+    never a single use, and never gates. Threshold: a cluster (3+) or a high rate
+    (> 1 per 100 words) on a piece long enough to judge."""
+    lower = draft.lower()
+    found = _count_terms(lower, APPROX_HEDGES)
+    numeric = len(APPROX_NUMERIC_RE.findall(draft))
+    if numeric:
+        found["about/around <number>"] = numeric
+    total = sum(found.values())
+    words = len(WORD_RE.findall(_strip_frontmatter_headers(draft))) or 1
+    per_100 = round(total / words * 100, 2)
+    flagged = total >= 3 or (words >= 80 and per_100 > 1.0)
+    return {
+        "count": total,
+        "per_100_words": per_100,
+        "found": dict(found),
+        "pass": not flagged,
+        "advisory": True,
+        "details": f"{total} approximation hedge(s), {per_100} per 100 words"
+        if found
+        else "no approximation hedges",
+    }
+
+
+def dead_verb_density(draft):
+    """Advisory: clustering of dead metaphor/business verbs (leverage, unlock,
+    pivot, double down, amplify). No single one is a hard fail here (the per-word
+    slop budget owns that); three or more in a piece is the metaphor-soup tell the
+    per-word view misses. Narrow list: only verbs whose business sense dominates,
+    so literal uses elsewhere stay quiet."""
+    found = _count_terms(draft.lower(), DEAD_VERBS)
+    total = sum(found.values())
+    words = len(WORD_RE.findall(_strip_frontmatter_headers(draft))) or 1
+    per_100 = round(total / words * 100, 2)
+    return {
+        "count": total,
+        "per_100_words": per_100,
+        "found": dict(found),
+        "pass": total < 3,
+        "advisory": True,
+        "details": f"{total} dead metaphor verb(s): {dict(found)}"
+        if found
+        else "no dead metaphor-verb cluster",
+    }
+
+
+def balanced_pairs(draft):
+    """Advisory: mirrored adjacent sentences ('When X, we Y. When A, we B.'), the
+    false-symmetry anaphora AI reaches for. Counts adjacent pairs that share a
+    subordinator opener and sit within three words of each other in length. Two or
+    more such pairs (three or more consecutive mirrored sentences) is the drumbeat
+    and flags; a single balanced pair is common in real prose and stays quiet.
+    Conservative by design, and never gates."""
+    sents = _sentences(draft)
+    pairs = 0
+    examples = []
+    for a, b in zip(sents, sents[1:]):
+        wa, wb = a.split(), b.split()
+        fa, fb = wa[0].lower().strip(","), wb[0].lower().strip(",")
+        if (
+            fa == fb
+            and fa in BALANCED_SUBORDINATORS
+            and abs(len(wa) - len(wb)) <= 3
+        ):
+            pairs += 1
+            examples.append(f"{fa} ... / {fb} ...")
+    return {
+        "count": pairs,
+        "pass": pairs < 2,
+        "examples": examples[:4],
+        "advisory": True,
+        "details": f"{pairs} mirrored balanced pair(s) (threshold 2)"
+        if pairs
+        else "no balanced-pair anaphora",
+    }
+
+
+def _draft_words(draft):
+    """Word count on header/frontmatter-stripped text, floored at 1 for ratios."""
+    return len(WORD_RE.findall(_strip_frontmatter_headers(draft))) or 1
+
+
+def _sentence_has_concrete(sentence):
+    """True if a sentence carries a concrete anchor: a digit or a proper noun
+    (a capitalised token that is not the sentence-initial word)."""
+    if NUMERIC_RE.search(sentence):
+        return True
+    return any(
+        PROPER_NOUN_RE.match(t.strip("\"'(),.:;")) for t in sentence.split()[1:]
+    )
+
+
+def copula_ratio(draft):
+    """Advisory: share of plain 'to be'/'to have' against fancier copula-avoidance
+    substitutes (serves as, represents, constitutes). AI dodges plain copulas; a
+    low share next to a cluster of substitutes reads as dissertation register.
+    Flags only when substitutes cluster (>= 2) and the plain share is low on a
+    piece long enough to judge. Reports the ratio for the voiceprint. Never gates."""
+    lower = draft.lower()
+    plain = len(COPULA_PLAIN_RE.findall(lower))
+    avoid = sum(_count_terms(lower, COPULA_AVOIDERS).values())
+    denom = plain + avoid
+    ratio = round(plain / denom, 2) if denom else 1.0
+    flagged = avoid >= 2 and ratio < 0.6 and _draft_words(draft) >= 40
+    return {
+        "plain": plain,
+        "avoiders": avoid,
+        "ratio": ratio,
+        "pass": not flagged,
+        "advisory": True,
+        "details": f"plain copula {plain}, avoiders {avoid}, plain share {ratio}",
+    }
+
+
+def specificity_density(draft):
+    """Advisory: concrete anchors (numbers, proper nouns) per 100 words. Low
+    density on a piece long enough to carry detail is the anonymous-prose tell:
+    abstractions with nothing to hold. Flags low; never rewards high (padding fake
+    numbers is its own manufactured-precision tell). Short pieces auto-pass."""
+    nums = len(NUMERIC_RE.findall(draft))
+    propers = sum(
+        1
+        for s in _sentences(draft)
+        for t in s.split()[1:]
+        if PROPER_NOUN_RE.match(t.strip("\"'(),.:;"))
+    )
+    concrete = nums + propers
+    words = _draft_words(draft)
+    per_100 = round(concrete / words * 100, 2)
+    short = words < 40
+    return {
+        "numbers": nums,
+        "proper_nouns": propers,
+        "per_100_words": per_100,
+        "pass": short or per_100 >= 1.5,
+        "advisory": True,
+        "details": f"{concrete} concrete anchor(s) ({nums} number(s), {propers} name(s)), "
+        f"{per_100} per 100 words" + (" (too short to judge)" if short else ""),
+    }
+
+
+def generic_to_specific(draft):
+    """Advisory: the scaffolding move where an abstract general opener is followed
+    by a concrete example ('Great teams ship fast. At Acme we shipped 12 in Q1.').
+    A common AI shape: state the truism, then the specific. Heuristic and fuzzy, so
+    advisory and a nudge for the re-read, never a gate."""
+    sents = _sentences(draft)
+    flagged = False
+    if len(sents) >= 2 and not _sentence_has_concrete(sents[0]):
+        flagged = any(_sentence_has_concrete(s) for s in sents[1:3])
+    return {
+        "pass": not flagged,
+        "advisory": True,
+        "details": "abstract opener then a concrete pivot (generic-to-specific scaffold)"
+        if flagged
+        else "no generic-to-specific opener detected",
+    }
+
+
+def stance_signal(draft, formal=False, audience_tag="aus"):
+    """Advisory: presence of opinion/judgement (I think, surprising, wrong,
+    better). Its ABSENCE in a longer non-neutral piece is the anonymous tell: a
+    competent summary with no human behind it. Suppressed where neutral is correct
+    (formal channels, status updates, board papers). Never gates."""
+    tag = (audience_tag or "").lower()
+    neutral_channel = formal or "board" in tag or "status" in tag
+    count = sum(_count_terms(draft.lower(), STANCE_MARKERS).values())
+    short = _draft_words(draft) < 40
+    flagged = (not neutral_channel) and (not short) and count == 0
+    return {
+        "count": count,
+        "neutral_channel": neutral_channel,
+        "pass": not flagged,
+        "advisory": True,
+        "details": f"{count} stance marker(s)"
+        + (" (neutral channel: stance optional)" if neutral_channel else "")
+        + (" (too short to judge)" if short else ""),
+    }
+
+
 def burstiness(draft):
     """Coefficient of variation of sentence length (stdev / mean). Burstiness is
     one of the two axes AI detectors actually use: human prose mixes short and
@@ -984,12 +1312,92 @@ def number_count(draft):
     }
 
 
-def all_checks(draft, audience_tag="aus", medium="plain", formal=False):
+# ---------------------------------------------------------------------------
+# Voiceprint (Phase 3). A scalar feature vector for the engine to compute (body)
+# and the profile to store a baseline of (soul). It measures presence-of-THIS-
+# voice by distance from the user's own corpus distribution, replacing the
+# channel-agnostic, AI-derived absolute thresholds elsewhere. Advisory only: it
+# reports a distance, not a direction to move, so there is nothing to tune toward
+# (self-harness-loop.md, the Goodhart limit). The held-out judge stays the gate.
+# ---------------------------------------------------------------------------
+
+def voiceprint_features(text):
+    """Stdlib scalar feature vector for the voiceprint. Each feature reuses an
+    existing detector's internals so the body computes features and the soul stores
+    the baseline. Scalars only, so a draft scores against a baseline by per-feature
+    z-score (see voiceprint_distance)."""
+    clean = strip_sweep_ignore(text)
+    lengths = [len(s.split()) for s in _sentences(clean)]
+    n = len(lengths)
+    mean = sum(lengths) / n if n else 0.0
+    if n >= 2 and mean:
+        var = sum((x - mean) ** 2 for x in lengths) / n
+        cov = (var ** 0.5) / mean
+    else:
+        cov = 0.0
+    words = _draft_words(clean)
+    paras = [p for p in re.split(r"\n\s*\n", _strip_frontmatter(clean)) if p.split()]
+    para_lengths = [len(p.split()) for p in paras]
+    para_mean = sum(para_lengths) / len(para_lengths) if para_lengths else float(words)
+    normalised = clean.replace("’", "'")
+    contractions_n = sum(len(p.findall(normalised)) for p in CONTRACTION_RES)
+    ause_n = sum(len(p.findall(clean)) for p in AUSE_ENDING_RES)
+    stance_n = sum(_count_terms(clean.lower(), STANCE_MARKERS).values())
+    return {
+        "sentence_mean": round(mean, 2),
+        "sentence_cov": round(cov, 3),
+        "copula_ratio": copula_ratio(clean)["ratio"],
+        "specificity_per_100": specificity_density(clean)["per_100_words"],
+        "contraction_per_100": round(contractions_n / words * 100, 2),
+        "ause_per_100": round(ause_n / words * 100, 2),
+        "stance_per_100": round(stance_n / words * 100, 2),
+        "paragraph_mean": round(para_mean, 2),
+    }
+
+
+def voiceprint_distance(draft, baseline, min_samples=3, flag_at=2.0):
+    """Advisory: how far a draft sits from a corpus voiceprint baseline, as the mean
+    absolute per-feature z-score. A baseline is {"samples": N, "features": {name:
+    {"mean": m, "stdev": s}}}. It reports a distance, never a direction, so there is
+    nothing to tune toward; the held-out judge remains the real voice gate. Refuses
+    to flag when the baseline is too thin to be stable (fewer than min_samples)."""
+    feats = voiceprint_features(draft)
+    samples = baseline.get("samples", 0) if isinstance(baseline, dict) else 0
+    base_feats = (baseline or {}).get("features", {}) or {}
+    per_feature = {}
+    zs = []
+    for k, v in feats.items():
+        b = base_feats.get(k)
+        if not b or not b.get("stdev"):
+            continue
+        z = abs(v - b["mean"]) / b["stdev"]
+        per_feature[k] = round(z, 2)
+        zs.append(z)
+    aggregate = round(sum(zs) / len(zs), 2) if zs else 0.0
+    thin = samples < min_samples
+    flagged = (not thin) and bool(zs) and aggregate >= flag_at
+    return {
+        "aggregate": aggregate,
+        "per_feature": per_feature,
+        "samples": samples,
+        "pass": not flagged,
+        "advisory": True,
+        "details": (
+            f"voiceprint distance {aggregate} (mean |z| over {len(zs)} feature(s))"
+            + (" — baseline too thin to flag" if thin else "")
+        ),
+    }
+
+
+def all_checks(draft, audience_tag="aus", medium="plain", formal=False, baseline=None):
     """Run every check. Returns a dict of results.
 
     medium: 'plain' (Slack/email/markdown) or 'docx' (word-processed deliverable).
     formal: True for cover letters and formal external email, where the I/This
     opener ban is hard rather than advisory.
+    baseline: an optional voiceprint baseline ({"samples", "features"}). When given,
+    an advisory `voiceprint_distance` block is added; omitted by default so existing
+    callers and the example evals are unaffected.
     """
     draft = strip_sweep_ignore(draft)
     # Scan the five binary-contrast regexes once and share with both views.
@@ -1011,6 +1419,15 @@ def all_checks(draft, audience_tag="aus", medium="plain", formal=False):
         "fragment_colon_headers": fragment_colon_headers(draft),
         "self_narrated_honesty": self_narrated_honesty(draft),
         "academic_register": academic_register(draft),
+        "transition_pileup": transition_pileup(draft),
+        "approximation_hedges": approximation_hedges(draft),
+        "dead_verb_density": dead_verb_density(draft),
+        "balanced_pairs": balanced_pairs(draft),
+        # Presence-of-human signals (Phase 2), all advisory.
+        "copula_ratio": copula_ratio(draft),
+        "specificity_density": specificity_density(draft),
+        "generic_to_specific": generic_to_specific(draft),
+        "stance_signal": stance_signal(draft, formal=formal, audience_tag=audience_tag),
         "sentence_profile": sentence_length_profile(draft),
         "burstiness": burstiness(draft),
         "paragraph_shape": paragraph_shape(draft),
@@ -1027,6 +1444,11 @@ def all_checks(draft, audience_tag="aus", medium="plain", formal=False):
     else:
         results["ause_spelling_clean"] = ause_spelling_clean(draft)
 
+    # Voiceprint distance only when a corpus baseline is supplied. Advisory, so it
+    # rides the advisory rail below and never counts toward pass/fail.
+    if baseline is not None:
+        results["voiceprint_distance"] = voiceprint_distance(draft, baseline)
+
     # Overall pass: advisory checks report but don't count against the summary.
     hard = {k: r for k, r in results.items() if "pass" in r and not r.get("advisory")}
     advisory = {k: r for k, r in results.items() if "pass" in r and r.get("advisory")}
@@ -1042,6 +1464,7 @@ def all_checks(draft, audience_tag="aus", medium="plain", formal=False):
         "fragment_colon_labels": results["fragment_colon_headers"]["count"],
         "self_narrated_honesty": results["self_narrated_honesty"]["count"],
         "academic_register": results["academic_register"]["count"],
+        "transition_openers": results["transition_pileup"]["count"],
         "burstiness_cov": results["burstiness"]["cov"],
         "structural_tell_total": results["structural_tells"]["count"],
     }

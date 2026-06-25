@@ -105,6 +105,8 @@ Two clauses with perfectly mirrored structure, one positive and one negative (or
 
 **Fix:** Give the two halves different weight or rhythm. Make one longer than the other. Or just state the positive case and let the reader infer the negative: "Teams ship great products when these elements align." The failure case is obvious; you don't need to spell it out.
 
+`writing_checks.py` (`balanced_pairs`) flags this as **advisory** when two or more mirrored pairs cluster (three or more consecutive sentences opening on the same subordinator at near-equal length), the anaphora drumbeat ("When X... When A... When we stop..."). A single balanced pair is common and human, so it stays quiet; the detector only fires on the repetition that turns symmetry into a tic. Use the re-read for the single-pair case the script leaves alone.
+
 ---
 
 ## Dramatic fragmentation
@@ -212,6 +214,8 @@ How AI moves between paragraphs when it has no actual connective logic. These ph
 
 **Fix:** If the next paragraph is genuinely interesting, its content will show that. You don't need to announce interest. If you need a transition, use the actual logical connection: "That created a new problem:", "Which is why...", or simply start the next paragraph.
 
+**The discourse-marker pileup.** A quieter version: every other sentence opens on a formal connective (Moreover, Furthermore, Additionally, Consequently, Notably, Importantly). One is a normal hinge; two or more in a piece is the essay-bot drumbeat, a five-paragraph-essay reflex that real writers in a direct register almost never produce. `writing_checks.py` (`transition_pileup`) flags two or more sentence-initial openers from that set. Fix: delete the connective and let the sentences sit next to each other, or replace it with the actual logical link.
+
 ---
 
 ## The qualifier sandwich
@@ -273,6 +277,8 @@ Fill-in-the-blank structures that AI reaches for constantly. Swap the nouns and 
 - "The [role] of 2026 will look nothing like the [role] of 2024."
 - "[X] that [verb] will thrive. [X] that don't will be left behind."
 - "Your [X] is only as good as your [Y]."
+
+`writing_checks.py` catches two of these automatically: the "The best [role] don't [X]. They [Y]." form (`sentence_template`) and the cross-sentence reframe "[X] isn't [obvious]. It's [reframe]." (`sentence_reframe`), where the reveal is a copula so a plain continuation does not false-fire. The rest ("[X] is the new [Y]", "If you're still [old method]") are too noun-dependent to match precisely, so they stay a manual catch on the re-read.
 
 **Fix:** Don't fill in templates. Start with what you actually want to say and find the words for that specific thing. If you notice your sentence would work with different nouns swapped in, it's probably a template.
 

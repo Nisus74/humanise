@@ -6,9 +6,8 @@ description: >
   emails, LinkedIn posts, Slack messages, reports, blog posts, proposals, investor updates,
   board papers, PRDs, press releases, sales copy, documentation, and anything else written.
   Also trigger when the user mentions Australian English, em dashes, buzzwords, AI-sounding
-  writing, or asks to make something sound more human or natural. Read as a dependency by the
-  resume and cover-letter skills for their style rules. Trigger proactively whenever writing
-  quality matters, even if style or tone isn't mentioned. Do NOT trigger for quick
+  writing, or asks to make something sound more human or natural. Trigger proactively whenever
+  writing quality matters, even if style or tone isn't mentioned. Do NOT trigger for quick
   conversational chat replies, in-chat analysis the user won't send or publish, or code and
   configuration; those sit outside the style envelope.
 ---
@@ -19,10 +18,7 @@ description: >
 
 This skill governs how Claude writes and edits content for the user. The goal is writing that sounds like a specific, opinionated person wrote it: clear, direct, and readable. The output should steer well clear of corporate polish, filler padding, and any tell that would make a reader think it came from a language model.
 
-This skill serves two roles:
-
-1. **Standalone:** When the user asks to write, edit, or review a piece of text, this skill runs the full workflow (analyse, draft/edit, verify, present).
-2. **Dependency:** When a calling skill is active (see `references/integration-contract.md`), it reads this skill for style rules. In that case, apply the rules but don't run the workflow sections; the calling skill has its own workflow.
+This is a standalone skill. When the user asks to write, edit, or review a piece of text, it runs the full workflow end to end (analyse, draft/edit, verify, present). It owns its own workflow and is not invoked as a style dependency by other skills.
 
 Apply these rules to all content: generated from scratch and edited from existing text alike.
 
@@ -111,10 +107,6 @@ Context comes in two tiers. Tier one is the drafting card: the small set of mate
 **Read when the content is technical:**
 
 - `references/technical-writing.md`: Code comments, commit messages, PRs, ADRs, RFCs. The prose rules bend for technical formats; this file explains how.
-
-**Read when another skill is calling this one (dependency mode):**
-
-- `references/integration-contract.md`: What callers (resume, cover-letter, product-management, cto-operating-system) pass in and what they can rely on.
 
 **Read when revisiting or iterating on the skill itself:**
 
@@ -298,6 +290,8 @@ Pass-two checklist (full detail in `references/mechanical-sweep.md`; taxonomy in
 
 Then re-read the draft with fresh eyes and ask yourself: **"What still makes this obviously AI-generated, and does this actually sound like the user?"**
 
+**Use the advisory signals as prompts, not verdicts.** The script's `_summary.advisory_flagged` list names where the draft may be thin: `specificity_density` (no numbers or names to hold), `stance_signal` (no opinion where one belongs), `generic_to_specific` (an abstract opener propped up by a borrowed example), `copula_ratio` (dissertation register). These never fail the piece, by design; they point the read-aloud test at the likely soft spots. For each flag, ask the matching self-check question in `references/positive-patterns.md` and fix only if the draft is genuinely anonymous, not merely short or neutral by design. Removing AI tells makes a draft clean; installing these makes it sound like a person.
+
 Write a brief internal list of remaining tells. Common things that survive the mechanical sweep:
 
 - Binary contrasts you diagnosed in the source and reproduced in your rewrite with different words (compare your diagnosis against your rewrite line by line)
@@ -316,7 +310,7 @@ Then revise to fix those remaining tells. This second pass separates decent outp
 Don't self-score on a 1–5 scale; model self-ratings cluster at 4 and tell the user nothing. Assemble three pieces of evidence instead:
 
 1. **Script results.** The final `writing_checks.py` run, clean on the non-negotiables: em dashes, quote style matched to the medium, severity-1 slop, slop openers.
-2. **A named anchor diff.** Name the corpus sample or section 9 anchor closest to this piece and state, in a line or two, where the draft diverges from it and why that's deliberate. A voice claim with no named comparison is a guess, and the model grading its own voice on feel is exactly the self-assessment this skill says not to trust.
+2. **A named anchor diff.** Name the corpus sample or section 9 anchor closest to this piece and state, in a line or two, where the draft diverges from it and why that's deliberate. A voice claim with no named comparison is a guess, and the model grading its own voice on feel is exactly the self-assessment this skill says not to trust. When a `profile/voiceprint.json` baseline exists, add the voiceprint distance (`humanise voiceprint <file>`) as the quantified companion: a low distance corroborates the anchor diff, a high one says re-read before presenting. It's advisory, so it informs the judgement and never replaces it.
 3. **The adversarial read, for external pieces** (board paper, investor update, LinkedIn, blog, cover letter, customer-facing): one pass whose only job is to fail the draft. Assume it's AI-generated and find the three things that give it away; fix them before presenting. Where the stakes warrant it, run this as a separate reviewer (the `agents/adversarial-reviewer.md` subagent) rather than the persona that wrote the draft, since the writer shares the draft's blind spots.
 
 If any of the three turns up a problem, revise and re-verify. For internal quick messages (Slack, short emails), the script run alone is enough, but the point still has to be there: a quick message with no actual point shouldn't be sent.
@@ -351,7 +345,7 @@ Run the same two-pass sweep from the generation workflow: pass one (character-le
 
 ### Step 5: Self-critique pass
 
-Run the point check from the generation workflow Step 1 first: what does this say that a generic model wouldn't? An edit can scrub every tell and still leave a piece that says nothing. Then run the read-aloud test and re-read asking: "What still makes this obviously AI-generated, and does this sound like the user?" Fix remaining tells. This pass matters as much for editing as for generation; it's easy to clean up obvious slop and leave the structural patterns intact.
+Run the point check from the generation workflow Step 1 first: what does this say that a generic model wouldn't? An edit can scrub every tell and still leave a piece that says nothing. Then run the read-aloud test and re-read asking: "What still makes this obviously AI-generated, and does this sound like the user?" Read the `advisory_flagged` presence-of-human signals (`specificity_density`, `stance_signal`, `generic_to_specific`, `copula_ratio`) as prompts for where the edit may have left the piece anonymous, and fix remaining tells. This pass matters as much for editing as for generation; it's easy to clean up obvious slop and leave the structural patterns intact.
 
 ### Step 6: Verification evidence
 
