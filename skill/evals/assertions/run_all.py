@@ -35,6 +35,7 @@ import json
 import os
 import re
 import sys
+from collections import Counter, defaultdict
 from pathlib import Path
 
 # Allow running from the assertions directory directly.
@@ -248,15 +249,13 @@ def aggregate(eval_results):
     graded = [r for r in eval_results if r["status"] == "graded"]
     missing = [r for r in eval_results if r["status"] == "missing_draft"]
 
-    advisory_flags = {}
+    advisory_flags = Counter()
     for r in graded:
-        for name in r.get("advisory_flagged", []):
-            advisory_flags[name] = advisory_flags.get(name, 0) + 1
+        advisory_flags.update(r.get("advisory_flagged", []))
 
-    per_channel = {}
+    per_channel = defaultdict(lambda: {"passed": 0, "total": 0, "evals": 0})
     for r in graded:
         ch = r["channel"] or "unknown"
-        per_channel.setdefault(ch, {"passed": 0, "total": 0, "evals": 0})
         per_channel[ch]["passed"] += r["passed"]
         per_channel[ch]["total"] += r["total"]
         per_channel[ch]["evals"] += 1
@@ -270,8 +269,8 @@ def aggregate(eval_results):
         "overall_pass_rate": passed_assertions / total_assertions
         if total_assertions
         else 0,
-        "advisory_flag_counts": advisory_flags,
-        "per_channel": per_channel,
+        "advisory_flag_counts": dict(advisory_flags),
+        "per_channel": dict(per_channel),
         "missing_ids": [r["eval_id"] for r in missing],
     }
 

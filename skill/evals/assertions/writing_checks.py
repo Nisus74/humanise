@@ -52,7 +52,17 @@ SEVERITY_1_SLOP = [
     "interplay",
 ]
 
-# "landscape" is severity 1 only when metaphorical, so flagged separately below.
+# "landscape" is severity 1 only when metaphorical: an abstract-domain modifier
+# precedes it ("competitive/regulatory/AI landscape"). Literal uses ("landscape
+# photography", "a landscape of rolling hills") are left alone. Compiled once.
+LANDSCAPE_METAPHOR_RE = re.compile(
+    r"\b(?:competitive|business|market|funding|regulatory|threat|media|"
+    r"political|economic|technological|technology|tech|digital|cultural|"
+    r"legal|financial|investment|startup|vendor|product|industry|innovation|"
+    r"security|data|current|evolving|changing|shifting|broader|wider|global|"
+    r"modern|emerging|ai)\s+landscape\b",
+    re.IGNORECASE,
+)
 
 SEVERITY_2_3_SLOP = [
     "leverage",
@@ -153,6 +163,9 @@ ACADEMIC_PHRASES = [
     "serves to",
     "serve to",
 ]
+
+# Verbs and phrases scanned together by academic_register; joined once at import.
+ACADEMIC_REGISTER = ACADEMIC_VERBS + ACADEMIC_PHRASES
 
 # Self-narrated honesty / meta-candour. The writing announces its own candour
 # instead of just being candid. A trust-me reflex models reach for and people
@@ -344,6 +357,12 @@ CONTRACTIONS = [
     r"\b(let's)\b",
 ]
 
+# Precompiled once at import. The dialect-ending and contraction scans run on
+# every draft, so compiling these (76 + 40 + 9 patterns) per call was pure waste.
+AUSE_ENDING_RES = [re.compile(p, re.IGNORECASE) for p in AUSE_ENDINGS]
+US_ENDING_RES = [re.compile(p, re.IGNORECASE) for p in US_ENDINGS]
+CONTRACTION_RES = [re.compile(p, re.IGNORECASE) for p in CONTRACTIONS]
+
 
 # ---------------------------------------------------------------------------
 # Shared helpers. These scan/strip idioms recur across many checks; keeping one
@@ -376,6 +395,26 @@ NEGATED_COPULA_RE = re.compile(
 # antithesis move as the binary contrast, a different surface the other regexes miss.
 NEG_PIVOT_RE = re.compile(r"\bless about\b.{2,40}?\bmore about\b", re.IGNORECASE)
 
+# Triple/template tells scanned by structural_tell_count, compiled once.
+TRIPLE_AND_RE = re.compile(
+    r"\b(\w+(?:\s+\w+){0,2}),\s+(\w+(?:\s+\w+){0,2}),\s+and\s+(\w+(?:\s+\w+){0,2})\b"
+)
+TRIPLE_NO_AND_RE = re.compile(
+    r"(\w+(?:\s+\w+){0,2}),\s+(\w+(?:\s+\w+){0,2}),\s+(\w+(?:\s+\w+){0,2})(?=[.!?])"
+)
+SENTENCE_TEMPLATE_RE = re.compile(
+    r"The\s+(?:best\s+)?\w+s?\s+don'?t\s+\w+[^.]*\.\s+They\s+\w+"
+)
+# Transition-slop connectors. Module-level so other passes can reuse the list.
+TRANSITION_SLOP = [
+    "but here's where",
+    "and here's the kicker",
+    "now for the surprising",
+    "let me put it this way",
+    "here's what's interesting",
+]
+TRANSITION_SLOP_RES = [re.compile(p, re.IGNORECASE) for p in TRANSITION_SLOP]
+
 
 def _binary_contrast_hits(draft):
     """Return (inline, classic, not_just, negated_copula, neg_pivot) match lists."""
@@ -398,6 +437,12 @@ def _strip_frontmatter_headers(text):
     return re.sub(r"^#+\s*.*$", "", _strip_frontmatter(text), flags=re.MULTILINE)
 
 
+@lru_cache(maxsize=None)
+def _term_re(term):
+    """Compiled word-boundary matcher for a slop/register term, cached across calls."""
+    return re.compile(rf"\b{re.escape(term)}\b")
+
+
 def _count_terms(lower, terms):
     """Word-boundary occurrence counts for each term in an already-lowercased draft.
 
@@ -406,17 +451,17 @@ def _count_terms(lower, terms):
     """
     found = Counter()
     for term in terms:
-        n = len(re.findall(rf"\b{re.escape(term)}\b", lower))
+        n = len(_term_re(term).findall(lower))
         if n:
             found[term] = n
     return found
 
 
 def _spelling_leaks(draft, patterns):
-    """Flat list of every match across a list of dialect-ending patterns."""
+    """Flat list of every match across a list of compiled dialect-ending patterns."""
     hits = []
     for pattern in patterns:
-        hits.extend(re.findall(pattern, draft, re.IGNORECASE))
+        hits.extend(pattern.findall(draft))
     return hits
 
 
@@ -458,7 +503,13 @@ def en_dash_count(draft, allow_in_ranges=True):
     """Count en dashes. If allow_in_ranges, skip those between digits (2015–18)."""
     all_ens = draft.count("–")
     if not allow_in_ranges:
-        return {"count": all_ens, "pass": all_ens == 0}
+        return {
+            "total": all_ens,
+            "non_range_count": all_ens,
+            "count": all_ens,
+            "pass": all_ens == 0,
+            "details": f"{all_ens} en dash(es) (ranges not exempt)",
+        }
     # Non-range use = a spaced en dash doing em-dash/pause work ("result – a fix").
     # Unspaced en dashes join range endpoints (2015–18, Mon–Fri) and are allowed.
     bad = len(re.findall(r"(?<=\s)–|–(?=\s)", draft))
@@ -520,20 +571,10 @@ def severity_1_slop_count(draft):
     """Count Severity 1 slop words (case-insensitive, word-boundary)."""
     lower = draft.lower()
     found = _count_terms(lower, SEVERITY_1_SLOP)
-    # 'landscape' is severity-1 slop only in its metaphorical sense: flag it when an
-    # abstract-domain modifier precedes it ("competitive/regulatory/AI landscape",
-    # "evolving landscape"). Literal uses ("a landscape of rolling hills",
-    # "landscape photography") are left alone so this hard check does not false-fire.
-    metaphorical = len(
-        re.findall(
-            r"\b(?:competitive|business|market|funding|regulatory|threat|media|"
-            r"political|economic|technological|technology|tech|digital|cultural|"
-            r"legal|financial|investment|startup|vendor|product|industry|innovation|"
-            r"security|data|current|evolving|changing|shifting|broader|wider|global|"
-            r"modern|emerging|ai)\s+landscape\b",
-            lower,
-        )
-    )
+    # 'landscape' is severity-1 slop only in its metaphorical sense (see
+    # LANDSCAPE_METAPHOR_RE). Literal uses are left alone so this hard check
+    # does not false-fire.
+    metaphorical = len(LANDSCAPE_METAPHOR_RE.findall(lower))
     if metaphorical:
         found["landscape(metaphor)"] = metaphorical
     total = sum(found.values())
@@ -664,10 +705,7 @@ def ause_count(draft):
 
     Tripwire, not a quota: a short natural piece can have zero -ise words.
     Treat as advisory in evals; never pad a draft to lift this number."""
-    hits = set()
-    for pattern in AUSE_ENDINGS:
-        if re.search(pattern, draft, re.IGNORECASE):
-            hits.add(pattern)
+    hits = {pattern for pattern in AUSE_ENDING_RES if pattern.search(draft)}
     return {
         "count": len(hits),
         "pass": len(hits) >= 2,
@@ -679,7 +717,7 @@ def ause_count(draft):
 
 def us_spelling_clean(draft):
     """For US-tagged content: confirm no AusE leakage."""
-    ause_hits = _spelling_leaks(draft, AUSE_ENDINGS)
+    ause_hits = _spelling_leaks(draft, AUSE_ENDING_RES)
     return {
         "pass": len(ause_hits) == 0,
         "ause_leaks": len(ause_hits),
@@ -691,7 +729,7 @@ def us_spelling_clean(draft):
 
 def ause_spelling_clean(draft):
     """For AU-tagged content: confirm no US leakage on key endings."""
-    us_hits = _spelling_leaks(draft, US_ENDINGS)
+    us_hits = _spelling_leaks(draft, US_ENDING_RES)
     return {
         "pass": len(us_hits) == 0,
         "us_leaks": len(us_hits),
@@ -705,10 +743,7 @@ def contraction_types(draft):
     # Normalise curly apostrophes to straight: in docx, curly (U+2019) is the human
     # default, but the CONTRACTIONS patterns are written with straight apostrophes.
     normalised = draft.replace("’", "'")
-    types_found = 0
-    for pattern in CONTRACTIONS:
-        if re.search(pattern, normalised, re.IGNORECASE):
-            types_found += 1
+    types_found = sum(1 for pattern in CONTRACTION_RES if pattern.search(normalised))
     return {
         "distinct_types": types_found,
         "pass": types_found >= 3,
@@ -727,7 +762,7 @@ def word_count(draft):
     }
 
 
-def structural_tell_count(draft):
+def structural_tell_count(draft, contrast_hits=None):
     """Heuristic count of structural tells. Not exhaustive and noisy at the
     edges (the triple regex both over- and under-fires); treat as a flag for a
     human re-read, not as ground truth.
@@ -741,8 +776,11 @@ def structural_tell_count(draft):
     hits = []
 
     # Binary contrasts (inline / classic / not-just / negated-copula) - shared with
-    # binary_contrast_density so both views measure the same thing.
-    binary_inline, classic_binary, not_just, negated_copula, neg_pivot = _binary_contrast_hits(draft)
+    # binary_contrast_density so both views measure the same thing. all_checks passes
+    # the hits in so the five-regex scan runs once per draft, not once per view.
+    binary_inline, classic_binary, not_just, negated_copula, neg_pivot = (
+        contrast_hits if contrast_hits is not None else _binary_contrast_hits(draft)
+    )
     hits.extend([f'binary_inline: "{m}"' for m in binary_inline])
     if classic_binary:
         hits.append(f"classic_binary_contrast: {len(classic_binary)}")
@@ -755,20 +793,14 @@ def structural_tell_count(draft):
 
     # Triple (three items separated by commas, same structure)
     # "X, Y, and Z" where X, Y, Z are short phrases of similar length.
-    triples = re.findall(
-        r"\b(\w+(?:\s+\w+){0,2}),\s+(\w+(?:\s+\w+){0,2}),\s+and\s+(\w+(?:\s+\w+){0,2})\b",
-        draft,
-    )
+    triples = TRIPLE_AND_RE.findall(draft)
     if len(triples) >= 2:
         hits.append(f"triples: {len(triples)} (threshold 2+)")
     # Triple without "and": three short parallel comma-separated phrases closing a
     # sentence ("Ship fast, learn deeply, repeat endlessly."). The rhythmic LinkedIn
     # triple the with-"and" regex misses. Drop matches whose items start with a
     # connector, which are usually the tail of a longer Oxford list, not a triple.
-    triples_no_and = re.findall(
-        r"(\w+(?:\s+\w+){0,2}),\s+(\w+(?:\s+\w+){0,2}),\s+(\w+(?:\s+\w+){0,2})(?=[.!?])",
-        draft,
-    )
+    triples_no_and = TRIPLE_NO_AND_RE.findall(draft)
     triples_no_and = [
         t
         for t in triples_no_and
@@ -778,21 +810,12 @@ def structural_tell_count(draft):
         hits.append(f"triple_no_and: {len(triples_no_and)}")
 
     # Transition slop
-    trans_slop = [
-        r"but here's where",
-        r"and here's the kicker",
-        r"now for the surprising",
-        r"let me put it this way",
-        r"here's what's interesting",
-    ]
-    for pat in trans_slop:
-        if re.search(pat, draft, re.IGNORECASE):
-            hits.append(f'transition_slop: "{pat}"')
+    for pat in TRANSITION_SLOP_RES:
+        if pat.search(draft):
+            hits.append(f'transition_slop: "{pat.pattern}"')
 
     # Sentence template: "The [X] don't Y. They Z."
-    template = re.search(
-        r"The\s+(?:best\s+)?\w+s?\s+don'?t\s+\w+[^.]*\.\s+They\s+\w+", draft
-    )
+    template = SENTENCE_TEMPLATE_RE.search(draft)
     if template:
         hits.append("sentence_template")
 
@@ -804,7 +827,7 @@ def structural_tell_count(draft):
     }
 
 
-def binary_contrast_density(draft):
+def binary_contrast_density(draft, contrast_hits=None):
     """Scale-aware view of the antithesis tic ('X, not Y', 'it's not X it's Y',
     'not just X but Y'). The per-piece budget breaks down on long documents:
     one contrast per section across sixteen sections is sixteen across the doc,
@@ -815,7 +838,9 @@ def binary_contrast_density(draft):
     from an empty one, so this flags density for a human or the adversarial
     reviewer to adjudicate. Threshold: more than 1 contrast per 600 words on a
     piece over 300 words."""
-    inline, classic, not_just, negated_copula, neg_pivot = _binary_contrast_hits(draft)
+    inline, classic, not_just, negated_copula, neg_pivot = (
+        contrast_hits if contrast_hits is not None else _binary_contrast_hits(draft)
+    )
     total = len(inline) + len(classic) + len(not_just) + len(negated_copula) + len(neg_pivot)
     words = len(WORD_RE.findall(draft))
     per_1000 = round(total / words * 1000, 2) if words else 0
@@ -895,7 +920,7 @@ def academic_register(draft):
     'predicated on', 'constitutes', 'indicative of'). Copula avoidance's fancier
     cousin. One or two in a long piece is tolerable; clustering is a rewrite.
     Threshold mirrors severity-2/3 slop: pass at <= 2."""
-    found = _count_terms(draft.lower(), ACADEMIC_VERBS + ACADEMIC_PHRASES)
+    found = _count_terms(draft.lower(), ACADEMIC_REGISTER)
     total = sum(found.values())
     return {
         "count": total,
@@ -967,6 +992,8 @@ def all_checks(draft, audience_tag="aus", medium="plain", formal=False):
     opener ban is hard rather than advisory.
     """
     draft = strip_sweep_ignore(draft)
+    # Scan the five binary-contrast regexes once and share with both views.
+    contrast_hits = _binary_contrast_hits(draft)
     results = {
         "em_dash": em_dash_count(draft),
         "en_dash_non_range": en_dash_count(draft, allow_in_ranges=True),
@@ -979,8 +1006,8 @@ def all_checks(draft, audience_tag="aus", medium="plain", formal=False):
         "ause_visible": ause_count(draft),
         "contractions": contraction_types(draft),
         "word_count": word_count(draft),
-        "structural_tells": structural_tell_count(draft),
-        "binary_contrast_density": binary_contrast_density(draft),
+        "structural_tells": structural_tell_count(draft, contrast_hits),
+        "binary_contrast_density": binary_contrast_density(draft, contrast_hits),
         "fragment_colon_headers": fragment_colon_headers(draft),
         "self_narrated_honesty": self_narrated_honesty(draft),
         "academic_register": academic_register(draft),

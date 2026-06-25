@@ -2,7 +2,7 @@
 // Compile the single source skill (skill/) into a per-provider build under dist/.
 // Each provider gets the same portable skill, placed at the path that harness expects.
 // The Python checker travels as-is; nothing is transpiled.
-import { cpSync, mkdirSync, rmSync, cpSync as cp } from "node:fs";
+import { cpSync, mkdirSync, rmSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { PROVIDERS } from "../cli/providers.mjs";
@@ -29,7 +29,7 @@ function build() {
   const pluginSrc = join(ROOT, ".claude-plugin", "plugin.json");
   const pluginDst = join(DIST, "claude-code", ".claude-plugin", "plugin.json");
   mkdirSync(dirname(pluginDst), { recursive: true });
-  cp(pluginSrc, pluginDst);
+  cpSync(pluginSrc, pluginDst);
   console.log("Built dist/ for: " + Object.keys(PROVIDERS).join(", "));
 }
 
