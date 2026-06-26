@@ -1,6 +1,6 @@
 # humanise
 
-An open-source agent skill that makes AI-generated writing sound like a *specific human* wrote it, not a generic one. Works across Claude Code, Codex, and Google Antigravity (Gemini CLI).
+An open-source agent skill that makes AI-generated writing sound like a *specific human* wrote it, not a generic one. Works with Claude Code, Cursor, Gemini CLI, Codex, Copilot, and OpenCode.
 
 humanise runs a two-pass sweep for the tells of AI prose (em dashes, slop words, binary contrasts, triples, fragment-colon drumbeats, and the rest), then drafts from your own writing so the output carries your voice. It ships a Python checker you can run in CI.
 
@@ -20,15 +20,17 @@ Fork the body. Transplant your soul. The fingerprint captures *how* you write; t
 
 ## Install
 
-From your project root:
+You need Node (for the CLI) and Python 3 (for the checker and voiceprint). From your project root:
 
 ```
 npx humanise install
 ```
 
-This auto-detects your agent (Claude Code, Cursor, Gemini CLI, Codex, Copilot, OpenCode) and copies the skill to the right place. Then run `/humanise init` inside your tool to set up your voice profile.
+This auto-detects your agent (Claude Code, Cursor, Gemini CLI, Codex, Copilot, OpenCode) and copies the skill to the right place. Then run `/humanise init` inside your tool to set up your voice profile. That guided setup is distinct from `npx humanise init`, which only scaffolds the profile files.
 
-Claude Code users can also install the plugin: `/plugin marketplace add Nisus74/humanise`. For a specific agent, `npx humanise install --provider=<name>` (claude-code, cursor, gemini, codex, github, opencode, universal). Per-platform detail in [docs/platforms.md](docs/platforms.md).
+Claude Code users can also install the plugin: `/plugin marketplace add Nisus74/humanise`. For a specific agent, `npx humanise install --provider=<name>` (claude-code, cursor, gemini, codex, github for Copilot, opencode, universal). Per-platform detail, including Gemini CLI and Antigravity, in [docs/platforms.md](docs/platforms.md).
+
+Setting up a profile from a local clone instead? See [docs/DEVELOP.md](docs/DEVELOP.md).
 
 ## Commands
 
@@ -44,19 +46,13 @@ One skill, a few verbs (`/humanise <command>`):
 
 ```
 npx humanise detect <file> [dialect]   # deterministic checker, no LLM, no API key
+npx humanise voiceprint <file>         # score a draft's distance from your voice (advisory)
+npx humanise voiceprint --build        # build the voiceprint baseline from your corpus
 npx humanise init                      # scaffold your profile
 npx humanise build                     # rebuild dist/ from skill/
 ```
 
-## Quickstart (about 15 minutes)
-
-1. `cp -r skill/profile.template skill/profile` (or `skill/profile.example` to start from a real example).
-2. Write `skill/profile/soul.md`: your convictions about writing. Concrete, first-person; `skill/profile.example/soul.md` shows the bar.
-3. Drop 5 to 10 real writing samples into `skill/profile/voice-corpus/`, then run `skill/scripts/generate-fingerprint.md` to build your fingerprint.
-4. `cp skill/config.example.yml skill/config.yml` and set your name, dialect, and channels.
-5. Check the engine: `cd skill/evals/assertions && python3 selftest.py`.
-
-Full walkthrough in [docs/SETUP.md](docs/SETUP.md).
+Full setup walkthrough in [docs/SETUP.md](docs/SETUP.md).
 
 ## How it works
 
