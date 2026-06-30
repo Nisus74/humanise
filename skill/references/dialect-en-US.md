@@ -1,6 +1,6 @@
 # Dialect: en-US (US English)
 
-Spelling and idiom essentials. Switching logic: `../cultural-calibration.md`. Matching regex: `US_ENDINGS` in `writing_checks.py`.
+Spelling and idiom essentials. Switching logic: `cultural-calibration.md`. Matching regex: `US_ENDINGS` in `writing_checks.py`.
 
 **Spelling**
 

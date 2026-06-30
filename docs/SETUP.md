@@ -18,7 +18,7 @@ This alone gets you usable output with a point of view, before any samples.
 
 ## 3. Add samples and generate your fingerprint (8 min)
 
-Drop 5 to 10 real samples into `profile/voice-corpus/` (one file each, per `SAMPLE_TEMPLATE.md`, in channel subfolders). Then run `scripts/generate-fingerprint.md` with Claude pointed at the corpus, and paste the result into `profile/voice-fingerprint.md`.
+Drop 5 to 10 real samples into `profile/` as flat `sample-<channel>-<slug>.md` files (one each, per `SAMPLE_TEMPLATE.md`). Then run `scripts/generate-fingerprint.md` with Claude pointed at the corpus, and paste the result into `profile/voice-fingerprint.md`.
 
 More samples, better voice. LinkedIn and blog first; they're the most AI-prone.
 

@@ -5,7 +5,7 @@ Guidance for Claude (and contributors) working on **humanise**: an open-source s
 ## The one rule: body vs soul
 
 - **Body (engine)**: `skill/SKILL.md`, `skill/references/`, `skill/evals/`, `skill/agents/`, `skill/commands/`, `skill/scripts/`. Universal and shared. Improve this.
-- **Soul (profile)**: `skill/profile/` holds a user's own soul, plus the voice-corpus and fingerprint. Personal. **Never commit a `profile/`. Never put one person's voice into the engine.** The repo ships `skill/profile.template/` and `skill/profile.example/` only.
+- **Soul (profile)**: `skill/profile/` holds a user's own soul, plus the voice corpus (flat `sample-*.md` files) and fingerprint. Personal. **Never commit a `profile/`. Never put one person's voice into the engine.** The repo ships `skill/profile.template/` and `skill/profile.example/` only.
 
 If a change only helps one person's writing, it's a profile change (their fork). If it helps everyone, it's an engine change (a PR).
 

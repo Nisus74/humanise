@@ -8,7 +8,7 @@ This test needs a model and human attention, so it's costly to run on every draf
 
 ## Protocol
 
-1. **Pick the channel.** Use a channel with at least two real samples in `profile/voice-corpus/`. Hold one sample out; it must not appear in the drafting context.
+1. **Pick the channel.** Use a channel with at least two real `profile/sample-<channel>-*.md` samples. Hold one sample out; it must not appear in the drafting context.
 2. **Generate the counterpart.** Give the skill a brief reconstructed from the held-out sample's frontmatter (`context` field): same topic territory, same audience, same approximate length. The skill must not see the held-out sample.
 3. **Judge blind.** Present both texts, unlabelled and order-randomised, to a fresh judge (the `../agents/indistinguishability-judge.md` subagent, no access to this conversation or the corpus) with this prompt:
 

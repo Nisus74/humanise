@@ -36,7 +36,8 @@
   ],
   "scripts": {
     "build": "node scripts/build.mjs",
-    "prepack": "node scripts/build.mjs",
+    "validate": "node scripts/validate-skill.mjs",
+    "prepack": "node scripts/build.mjs && node scripts/validate-skill.mjs",
     "test": "cd skill/evals/assertions && python3 selftest.py",
     "check:deps": "node scripts/check-no-deps.mjs"
   }

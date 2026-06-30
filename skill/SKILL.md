@@ -91,7 +91,7 @@ Context comes in two tiers. Tier one is the drafting card: the small set of mate
 
 - **The soul: `profile/soul.md`.** The user's convictions about writing, read first. It's the point of view the fingerprint serves; when a mechanical rule and the soul disagree, the soul wins. This is what separates the user's voice from a clean imitation.
 - The absolute rules in `profile/absolute-rules.md`, and the calibration anchors in `profile/voice-fingerprint.md` (top section and section 9). The full fingerprint is worth a read on first invocation per session.
-- The two or three samples in `profile/voice-corpus/` closest to the current channel, read raw. The fingerprint is the map; the samples are the territory, and imitation of the territory is what produces the voice. If the channel has no direct samples, take the nearest channel's samples, note the gap to the user, and lean harder on the fingerprint. For long-form documents (memos, board papers, PRDs), read from `profile/voice-corpus/long-form/` and its `register-descriptors.md`; the chat samples don't tell you how the user builds a document.
+- The two or three `profile/sample-<channel>-*.md` files closest to the current channel, read raw. The fingerprint is the map; the samples are the territory, and imitation of the territory is what produces the voice. If the channel has no direct samples, take the nearest channel's samples, note the gap to the user, and lean harder on the fingerprint. For long-form documents (memos, board papers, PRDs), read the nearest long-form exemplars: `profile/sample-long-form-*.md` plus the closest formal-channel samples (`profile/sample-board-paper-*.md`, `profile/sample-prd-*.md`, `profile/sample-investor-update-*.md`), and `profile/register-descriptors.md`; the chat samples don't tell you how the user builds a document.
 - The relevant playbook in `references/channel-playbooks.md`. If the channel isn't listed, use the nearest-neighbour mapping table at the end of that file.
 - Two or three moves from `references/positive-patterns.md`, chosen deliberately for this piece.
 
@@ -119,7 +119,7 @@ Context comes in two tiers. Tier one is the drafting card: the small set of mate
 
 ## Australian English
 
-The default dialect is Australian English; set yours in `config.yml` and see `references/dialects/` for the US and UK packs. The rest of this section is the AusE default. Whatever the dialect, use it consistently; readers and recruiters notice a mismatch.
+The default dialect is Australian English; set yours in `config.yml` and see `references/dialect-en-US.md` and `references/dialect-en-GB.md` for the US and UK packs. The rest of this section is the AusE default. Whatever the dialect, use it consistently; readers and recruiters notice a mismatch.
 
 **Spelling patterns:**
 
@@ -307,17 +307,18 @@ Then revise to fix those remaining tells. This second pass separates decent outp
 
 ### Step 6: Verification evidence
 
-Don't self-score on a 1–5 scale; model self-ratings cluster at 4 and tell the user nothing. Assemble three pieces of evidence instead:
+Don't self-score on a 1–5 scale; model self-ratings cluster at 4 and tell the user nothing. Assemble the evidence instead:
 
 1. **Script results.** The final `writing_checks.py` run, clean on the non-negotiables: em dashes, quote style matched to the medium, severity-1 slop, slop openers.
 2. **A named anchor diff.** Name the corpus sample or section 9 anchor closest to this piece and state, in a line or two, where the draft diverges from it and why that's deliberate. A voice claim with no named comparison is a guess, and the model grading its own voice on feel is exactly the self-assessment this skill says not to trust. When a `profile/voiceprint.json` baseline exists, add the voiceprint distance (`humanise voiceprint <file>`) as the quantified companion: a low distance corroborates the anchor diff, a high one says re-read before presenting. It's advisory, so it informs the judgement and never replaces it.
-3. **The adversarial read, for external pieces** (board paper, investor update, LinkedIn, blog, cover letter, customer-facing): one pass whose only job is to fail the draft. Assume it's AI-generated and find the three things that give it away; fix them before presenting. Where the stakes warrant it, run this as a separate reviewer (the `agents/adversarial-reviewer.md` subagent) rather than the persona that wrote the draft, since the writer shares the draft's blind spots.
+3. **The adversarial read, for external pieces** (board paper, investor update, LinkedIn, blog, cover letter, customer-facing): one pass whose only job is to fail the draft. Assume it's AI-generated and find what gives it away (up to three things); fix them before presenting. A clean draft is a valid result: the reviewer reports that it's hard to tell apart and ships it, rather than inventing tells to hit a count. Where the stakes warrant it, run this as a separate reviewer (the `agents/adversarial-reviewer.md` subagent) rather than the persona that wrote the draft, since the writer shares the draft's blind spots.
+4. **The fidelity check, for external pieces that carry claims** (numbers, names, dates, causal assertions) when a brief or source exists: confirm every specific claim is supported and the point still matches the brief. The skill pushes for specifics, and unsupported specifics are the cost; this catches a confident fabrication before it ships in the user's name. Where the stakes warrant it, run the `agents/fact-brief-checker.md` subagent over the brief plus the draft (unlike the adversarial reviewer, it receives the brief).
 
-If any of the three turns up a problem, revise and re-verify. For internal quick messages (Slack, short emails), the script run alone is enough, but the point still has to be there: a quick message with no actual point shouldn't be sent.
+If any of these turns up a problem, revise and re-verify. For internal quick messages (Slack, short emails), the script run alone is enough, but the point still has to be there: a quick message with no actual point shouldn't be sent.
 
 ### Step 7: Present
 
-Present the revised draft with the evidence in compact form: one line of script summary, the anchor diff, and anything the adversarial pass caught and fixed. If you made non-obvious choices (chose a particular angle, cut something from the brief, went against a direction), note them briefly. Then ask: "What would you change?"
+Present the revised draft with the evidence in compact form: one line of script summary, the anchor diff, and anything the adversarial and fidelity passes caught and fixed. If you made non-obvious choices (chose a particular angle, cut something from the brief, went against a direction), note them briefly. Then ask: "What would you change?"
 
 Don't finalise without feedback.
 
@@ -371,7 +372,7 @@ Before drafting, lay out the section structure and name the point for each secti
 
 ### Step D2: Pull a long-form exemplar
 
-Re-read the closest long-form sample in `profile/voice-corpus/` before drafting, not just the chat samples. The chat corpus nails the Slack register and tells you almost nothing about how the user builds a memo. If there's no long-form sample for this document type, say so to the user and lean on the register descriptors in `profile/voice-corpus/long-form/register-descriptors.md`, which capture the structural habits (how they open a memo, how they handle caveats, where the opinions sit) that the chat samples can't.
+Re-read the closest long-form exemplar before drafting (`profile/sample-long-form-*.md`, or the nearest `profile/sample-board-paper-*.md`, `profile/sample-prd-*.md`, or `profile/sample-investor-update-*.md`), not just the chat samples. The chat corpus nails the Slack register and tells you almost nothing about how the user builds a memo. If there's no long-form sample for this document type, say so to the user and lean on the register descriptors in `profile/register-descriptors.md`, which capture the structural habits (how they open a memo, how they handle caveats, where the opinions sit) that the chat samples can't.
 
 ### Step D3: Draft section by section
 
@@ -383,11 +384,11 @@ Run `writing_checks.py` on each section as you finish it (pass one and the now-a
 
 ### Step D5: Mandatory adversarial reviewer (separate context)
 
-For long-form this is not optional. Spin up the `agents/adversarial-reviewer.md` subagent (no access to the drafting context) whose only job is to fail the document. The writer shares the draft's blind spots, which is exactly why the persona that wrote fifty contrasts won't see them on re-read. Give the reviewer the `structural_density` dashboard plus the full text and this brief: assume it's AI-generated, find the tells, and specifically check whether any binary contrast was diagnosed in the source and faithfully reproduced in the rewrite with new words (the comparison the script can't make). Fix what it finds before presenting.
+For long-form this is not optional. Spin up the `agents/adversarial-reviewer.md` subagent (no access to the drafting context) whose only job is to fail the document. The writer shares the draft's blind spots, which is exactly why the persona that wrote fifty contrasts won't see them on re-read. Give the reviewer the `structural_density` dashboard plus the full text and this brief: assume it's AI-generated, find the tells, and specifically check for any residual binary-contrast shape in the draft itself, including ones re-clothed in fresh vocabulary that the regex misses. Fix what it finds before presenting. Where the document carries specific claims and a brief or source exists, also run the `agents/fact-brief-checker.md` subagent (which, unlike the adversarial reviewer, receives the brief) to confirm the claims are supported and the point held.
 
 ### Step D6: Present with the document-level evidence
 
-Present the cleaned document with the compact evidence: the whole-document `structural_density` numbers, the named long-form anchor diff, and what the adversarial reviewer caught and fixed. Note any section you cut or merged for having no point. Then ask what they'd change.
+Present the cleaned document with the compact evidence: the whole-document `structural_density` numbers, the named long-form anchor diff, and what the adversarial reviewer and fact-brief checker caught and fixed. Note any section you cut or merged for having no point. Then ask what they'd change.
 
 ---
 

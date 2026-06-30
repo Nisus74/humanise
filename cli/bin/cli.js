@@ -10,6 +10,7 @@ import {
   mkdirSync,
   cpSync,
   readFileSync,
+  readdirSync,
 } from "node:fs";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -96,9 +97,13 @@ function voiceprint(args) {
   if (args.includes("--build")) {
     const corpus =
       (args.find((a) => a.startsWith("--corpus=")) || "").split("=")[1] ||
-      join(base, "profile", "voice-corpus");
+      join(base, "profile");
     if (!existsSync(corpus)) {
-      console.error(`No corpus at ${corpus}. Run "/humanise init" and add samples first.`);
+      console.error(`No profile at ${corpus}. Run "/humanise init" first.`);
+      process.exit(1);
+    }
+    if (!readdirSync(corpus).some((f) => /^sample-.*\.md$/.test(f))) {
+      console.error(`No sample-*.md files in ${corpus}. Add samples (sample-<channel>-<slug>.md) before building a voiceprint.`);
       process.exit(1);
     }
     const r = spawnSync("python3", [script, "--corpus", corpus, "--out", baseline], { stdio: "inherit" });
@@ -149,7 +154,7 @@ function init() {
   console.log(`Created ${dest} from profile.template.`);
   console.log("Next:");
   console.log("  1. Write profile/soul.md (see profile.example/soul.md for the bar).");
-  console.log("  2. Collect 5-10 samples fast with scripts/corpus-questionnaire.md (into profile/voice-corpus/).");
+  console.log("  2. Collect 5-10 samples fast with scripts/corpus-questionnaire.md (flat in profile/ as sample-<channel>-*.md).");
   console.log("  3. Generate your fingerprint with scripts/generate-fingerprint.md (also builds the voiceprint).");
 }
 
@@ -169,7 +174,7 @@ Usage:
   npx humanise install [--provider=<name>] [--global]   install the skill into your AI tool
   npx humanise detect <file> [dialect] [medium]         run the deterministic checker (no LLM)
   npx humanise voiceprint <file>                        score a draft's distance from your voice (advisory)
-  npx humanise voiceprint --build                       build the baseline from profile/voice-corpus
+  npx humanise voiceprint --build                       build the baseline from profile/ samples
   npx humanise init                                     scaffold your voice profile
   npx humanise build                                    rebuild dist/ from skill/
   npx humanise version

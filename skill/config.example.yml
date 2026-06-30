@@ -1,7 +1,7 @@
 # Copy to config.yml and edit. The engine reads this; your profile/ holds your voice.
 
 name: "Your Name"
-dialect: en-AU          # en-AU | en-US | en-GB  (see references/dialects/)
+dialect: en-AU          # en-AU | en-US | en-GB  (see references/dialect-*.md)
 default_register: 3     # 1 raw ... 5 ceremonial (see references/tone-register.md)
 profile_dir: profile    # where your filled-in profile lives (cp from profile.template or profile.example)
 

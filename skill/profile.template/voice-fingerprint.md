@@ -2,7 +2,7 @@
 
 The distilled model of *how* you write, read on every draft. **Don't write it by hand.** Generate it from your samples:
 
-1. Put 5 to 10 real samples of your writing into `voice-corpus/` (see its README).
+1. Put 5 to 10 real samples of your writing into `profile/` as flat `sample-<channel>-<slug>.md` files (see `CORPUS.md` and `SAMPLE_TEMPLATE.md`).
 2. Run the generator in `scripts/generate-fingerprint.md`.
 3. Paste the result here, then refine the parts that don't ring true.
 

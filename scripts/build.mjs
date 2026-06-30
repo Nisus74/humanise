@@ -15,6 +15,7 @@ const skip = (src) =>
   !src.includes("__pycache__") &&
   !src.endsWith(".pyc") &&
   !src.endsWith(".ruff_cache") &&
+  !src.endsWith("/.DS_Store") &&
   !src.endsWith("/profile") && // never ship a user's filled-in profile
   !src.endsWith("/config.yml");
 

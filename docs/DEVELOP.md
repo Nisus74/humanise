@@ -2,7 +2,7 @@
 
 ## Layout
 
-- `skill/`: the source skill (SKILL.md, references, agents, evals, scripts, commands, profile.template, profile.example). This is what ships.
+- `skill/`: the source skill. This is what ships. The folder is named `skill/` in the repo but builds and installs as `humanise/` (matching the `name` in SKILL.md), so the shipped skill satisfies the spec's name-matches-directory rule. Validate the built artifact rather than the source.
 - `cli/`: the Node CLI (`bin/cli.js`) and the provider map (`providers.mjs`).
 - `scripts/build.mjs`: compiles `skill/` into `dist/<provider>/<path>` for each target agent.
 - `dist/`: generated build output (gitignored; built on demand and at publish).
@@ -13,7 +13,21 @@
 npm run build        # or: node scripts/build.mjs
 ```
 
-Emits `dist/<provider>/` for claude-code, cursor, gemini, codex, github, opencode, and universal. To add a provider: add a row to `cli/providers.mjs` (`PROVIDERS` path and a `DETECT` marker), then rebuild. The build is a copy with per-provider placement; the Python checker travels as-is, nothing is transpiled.
+Emits a `dist/<provider>/` for every supported agent (claude-code, cursor, gemini, codex, github, opencode, universal). To add a provider: add a row to `cli/providers.mjs` (`PROVIDERS` path and a `DETECT` marker), then rebuild. The build is a copy with per-provider placement; the Python checker travels as-is, nothing is transpiled.
+
+## Validate
+
+```
+npm run validate     # check the built dist/ against the Agent Skills spec
+```
+
+Run after `npm run build`. For each built `humanise/` it enforces the spec's hard rules:
+
+- the SKILL.md frontmatter is present and parses,
+- the `name` is lowercase-hyphenated and matches its directory,
+- the `description` stays within 1024 characters.
+
+Advisory warnings (which never fail the run) fire when SKILL.md goes over the ~5,000-token or 500-line progressive-disclosure budget, or when a folder sits more than one level deep. It checks the built artifact under `dist/`; running `skills-ref validate ./skill` on the source would flag that the folder is `skill/` rather than `humanise/`. `prepack` runs build then validate, so a publish can't ship a spec regression. Zero dependencies (Node built-ins), like `check:deps`.
 
 ## Test
 
@@ -41,8 +55,8 @@ If you have cloned this repo and want to work on a profile in place (rather than
 
 1. `cp -r skill/profile.template skill/profile` (or `skill/profile.example` to start from a real example).
 2. Write `skill/profile/soul.md`: your convictions about writing. Concrete, first-person; `skill/profile.example/soul.md` shows the bar.
-3. Drop 5 to 10 real writing samples into `skill/profile/voice-corpus/`, then run `skill/scripts/generate-fingerprint.md` to build your fingerprint (it also builds the voiceprint baseline).
-4. `cp skill/config.example.yml skill/config.yml` and set your name, dialect, and channels.
+3. Drop 5 to 10 real writing samples into `skill/profile/` as flat `sample-<channel>-<slug>.md` files, then run `skill/scripts/generate-fingerprint.md` to build your fingerprint (it also builds the voiceprint baseline).
+4. `cp skill/config.example.yml skill/config.yml` and set your name, dialect and channels.
 5. Check the engine: `cd skill/evals/assertions && python3 selftest.py`.
 
 `skill/profile/` is gitignored and never committed. Full walkthrough in [SETUP.md](SETUP.md).
@@ -50,5 +64,6 @@ If you have cloned this repo and want to work on a profile in place (rather than
 ## Release
 
 - Bump `version` in `package.json`.
-- `npm publish` (the `prepack` script rebuilds `dist/` into the published tarball).
+- `npm run validate` passes (also runs automatically in `prepack`).
+- `npm publish` (the `prepack` script rebuilds `dist/` and validates it before packing the tarball).
 - Tag the release once CI is green.

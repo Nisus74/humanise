@@ -155,7 +155,7 @@ Self-check: would a plain "is" or "has" carry this sentence? Then use it. Signal
 
 ## Voice moves specific to the user
 
-Evidence base: the fingerprint synthesis (email and cover letters), their preferences statement, and the chat corpus in `profile/voice-corpus/chat/` (June 2026). Channel-specific moves get added as the formal corpus grows.
+Evidence base: the fingerprint synthesis (email and cover letters), their preferences statement, and the chat corpus (`profile/sample-chat-*.md`, June 2026). Channel-specific moves get added as the formal corpus grows.
 
 ### Plain criticism vocabulary
 
@@ -197,4 +197,4 @@ When drafting, pick two or three positive patterns to deliberately use. The mech
 
 Over time, the patterns specific to the user (the last section above) get more weight as the voice corpus fleshes out their actual habits. A generic "specific numbers beat adjectives" is universally true. A specific "the user opens investor updates with the biggest number from the quarter" is the user's move.
 
-Combine with `profile/voice-fingerprint.md` and the raw samples in `profile/voice-corpus/` for maximum effect.
+Combine with `profile/voice-fingerprint.md` and the raw `profile/sample-*.md` files for maximum effect.

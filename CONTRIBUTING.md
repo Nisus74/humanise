@@ -41,7 +41,7 @@ Promote only if the change improves at least one split and degrades neither. CI 
 
 ## Good first contributions
 
-- **A dialect pack.** Add `skill/references/dialects/<code>.md` plus the spelling lists in `writing_checks.py`. en-CA, en-IE and others are wanted.
+- **A dialect pack.** Add `skill/references/dialect-<code>.md` plus the spelling lists in `writing_checks.py`. en-CA, en-IE and others are wanted.
 - **A channel playbook.** Add a row to the mapping table or a full entry in `skill/references/channel-playbooks.md`.
 - **A slop word or a 2026-era tell.** Add it to `skill/references/ai-slop-dictionary.md` and the relevant list in `writing_checks.py`, with a fixture.
 

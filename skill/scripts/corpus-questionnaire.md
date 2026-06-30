@@ -1,6 +1,6 @@
 # Corpus questionnaire: pull your samples fast
 
-The corpus is the most valuable asset in your profile (see `profile/voice-corpus/README.md`), and also the most likely thing to stall onboarding: hunting for old writing and annotating it cold is slow. This questionnaire makes it fast. Run it with Claude (or any capable model); it pulls 5 to 10 real samples and fills the annotations by asking, instead of leaving you a blank template.
+The corpus is the most valuable asset in your profile (see `profile/CORPUS.md`), and also the most likely thing to stall onboarding: hunting for old writing and annotating it cold is slow. This questionnaire makes it fast. Run it with Claude (or any capable model); it pulls 5 to 10 real samples and fills the annotations by asking, instead of leaving you a blank template.
 
 It pairs with `generate-fingerprint.md`: this collects the samples, that turns them into your fingerprint.
 
@@ -28,7 +28,7 @@ The `what_worked` and `characteristic_of_you` fields are where most corpora go g
 - "What about this one lands for you? What would you have hated to see written the bland way?" feeds `what_worked`.
 - "Is there a move in here you make that others don't: how you open, where the opinion sits, how you stop?" feeds `characteristic_of_you`. If the answer is generic ("clear and direct"), push once: "Clear how? Point to the sentence."
 
-The model then writes the sample to `profile/voice-corpus/<channel>/YYYY-MM-DD-short-description.md` using `SAMPLE_TEMPLATE.md`, annotations filled from the answers. You correct anything that doesn't ring true.
+The model then writes the sample to `profile/sample-<channel>-<short-description>.md` using `SAMPLE_TEMPLATE.md`, annotations filled from the answers. You correct anything that doesn't ring true.
 
 ## When you're done
 

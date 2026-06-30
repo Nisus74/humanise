@@ -134,7 +134,7 @@ Memory is stage one (weakness mining) of the skill's self-improvement loop in `e
 
 ## Interaction with the voice corpus
 
-The voice corpus (`profile/voice-corpus/`) is the authoritative long-term record of the user's actual writing. Memory is the short-term buffer. The flow:
+The voice corpus (the `profile/sample-*.md` files) is the authoritative long-term record of the user's actual writing. Memory is the short-term buffer. The flow:
 
 1. Skill learns something from a single interaction.
 2. Writes a `feedback_writing_*` or `user_voice_*` memory.

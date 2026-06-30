@@ -9,7 +9,7 @@ and never ships; `scripts/build.mjs` excludes `/profile` from `dist/`.
 Distance is advisory. It flags a drifted draft for the held-out judge to look at;
 it is never a target to tune a draft toward (see `evals/self-harness-loop.md`).
 
-Build:  python3 build_voiceprint.py --corpus ../profile/voice-corpus --out ../profile/voiceprint.json
+Build:  python3 build_voiceprint.py --corpus ../profile
 Score:  python3 build_voiceprint.py --score draft.md --baseline ../profile/voiceprint.json
 """
 
@@ -25,15 +25,16 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "evals" / "asser
 from writing_checks import voiceprint_features, voiceprint_distance  # noqa: E402
 
 MIN_SAMPLE_WORDS = 30
-SKIP_NAMES = {"README.md", "SAMPLE_TEMPLATE.md"}
 
 
 def _read_samples(corpus_dir):
-    """Every corpus sample's body (frontmatter stripped), long enough to measure."""
+    """Every flat sample-*.md body (frontmatter stripped), long enough to measure.
+
+    Samples live as flat files in profile/ named sample-<channel>-<slug>.md, so the
+    glob keeps soul/config files (soul.md, identity.md, voiceprint.json) out.
+    """
     texts = []
-    for path in sorted(Path(corpus_dir).rglob("*.md")):
-        if path.name in SKIP_NAMES:
-            continue
+    for path in sorted(Path(corpus_dir).glob("sample-*.md")):
         raw = path.read_text(encoding="utf-8")
         body = re.sub(r"^---.*?---\s*", "", raw, flags=re.DOTALL)
         if len(body.split()) >= MIN_SAMPLE_WORDS:
@@ -78,7 +79,7 @@ def score(draft_path, baseline_path):
 def main():
     ap = argparse.ArgumentParser(description="Build or apply a voiceprint baseline.")
     ap.add_argument("--corpus", help="directory of corpus samples to build from")
-    ap.add_argument("--out", help="output baseline path (default: <corpus>/../voiceprint.json)")
+    ap.add_argument("--out", help="output baseline path (default: <corpus>/voiceprint.json)")
     ap.add_argument("--score", help="a draft file to score against a baseline")
     ap.add_argument("--baseline", help="baseline JSON to score against")
     args = ap.parse_args()
@@ -88,7 +89,7 @@ def main():
             ap.error("--score requires --baseline")
         return score(args.score, args.baseline)
     if args.corpus:
-        out = args.out or str(Path(args.corpus).resolve().parent / "voiceprint.json")
+        out = args.out or str(Path(args.corpus).resolve() / "voiceprint.json")
         return build(args.corpus, out)
     ap.error("provide --corpus to build, or --score with --baseline to score")
 

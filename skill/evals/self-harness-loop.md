@@ -60,5 +60,5 @@ Every promoted change gets a `CHANGELOG.md` entry in the four-part schema (targe
 
 - **The battery can overfit.** It rewards passing the checks, which is not the same as sounding like the user. The held-out voice test and the real corpus are the guard; never tune a draft to the detector.
 - **Verifier coverage bounds the loop.** A weakness the script can't see can't be mined. Gaps in `writing_checks.py` cap what self-improvement can reach, which is why detector coverage is itself a tracked surface.
-- **Evidence quality bounds the loop.** Thin corpus, thin signal. The single highest-value input remains real samples in `profile/voice-corpus/`, not more rules.
+- **Evidence quality bounds the loop.** Thin corpus, thin signal. The single highest-value input remains real `profile/sample-*.md` samples, not more rules.
 - **The voiceprint is a tripwire, not a gate.** The voiceprint distance (`writing_checks.py` `voiceprint_distance`, built by `scripts/build_voiceprint.py`) is advisory: it flags a draft that drifts from the corpus baseline so the held-out judge knows where to look. It reports a distance, never a direction, and a thin baseline (fewer than three samples) refuses to flag at all. Treat it as the cheap early-warning that decides when to spend the judge, never as the voice verdict itself.

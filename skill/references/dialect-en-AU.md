@@ -1,6 +1,6 @@
 # Dialect: en-AU (Australian English)
 
-Spelling and idiom essentials. Switching logic and consistency checks: `../cultural-calibration.md`. Matching regex: `AUSE_ENDINGS` in `writing_checks.py`.
+Spelling and idiom essentials. Switching logic and consistency checks: `cultural-calibration.md`. Matching regex: `AUSE_ENDINGS` in `writing_checks.py`.
 
 **Spelling**
 

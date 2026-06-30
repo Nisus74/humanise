@@ -1,5 +1,5 @@
 ---
-channel: [linkedin | email | slack | investor-update | prd | board-paper | blog | status-update]
+channel: [linkedin | email | slack | investor-update | prd | board-paper | blog | status-update | long-form]
 audience:
   [
     describe the audience,

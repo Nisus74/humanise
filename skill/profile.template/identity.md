@@ -1,7 +1,7 @@
 # Identity: <your name>
 
 - **Name:** <name>
-- **Dialect:** <en-AU | en-US | en-GB | other> (sets spelling and idiom; see `references/dialects/`)
+- **Dialect:** <en-AU | en-US | en-GB | other> (sets spelling and idiom; see `references/dialect-*.md`)
 - **Role:** <what you do>
 - **Domain:** <the world you write about>
 - **Default register:** <rung 1 to 5; see `references/tone-register.md`>
