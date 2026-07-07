@@ -1,11 +1,13 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "humanise",
+  "displayName": "humanise",
   "version": "0.1.0",
-  "description": "Make AI-generated writing sound like a specific human wrote it. A shared anti-slop engine plus your own voice profile (body and soul).",
-  "author": "Nisus74",
+  "description": "Strip AI tells from writing and draft in a specific person's voice. A shared anti-slop engine plus your own voice profile (body and soul).",
+  "author": {
+    "name": "Nisus74"
+  },
   "license": "MIT",
   "homepage": "https://github.com/Nisus74/humanise",
-  "skills": [
-    "../skill"
-  ]
+  "repository": "https://github.com/Nisus74/humanise"
 }

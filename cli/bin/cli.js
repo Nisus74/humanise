@@ -37,6 +37,18 @@ function ensureBuilt() {
   }
 }
 
+function ensurePython() {
+  const probe = spawnSync("python3", ["--version"]);
+  if (probe.error) {
+    console.error(
+      "humanise needs Python 3 for the checker, and `python3` isn't on your PATH.\n" +
+        "Install Python 3 from https://www.python.org/downloads/ (or your package manager),\n" +
+        "confirm `python3 --version` works, then re-run.",
+    );
+    process.exit(1);
+  }
+}
+
 function install(args) {
   const flagProvider = (args.find((a) => a.startsWith("--provider=")) || "").split("=")[1];
   const global = args.includes("--global") || args.includes("-g");
@@ -70,6 +82,7 @@ function detect(args) {
   const dialect = positional[1] || "aus";
   const medium = positional[2] || "plain";
   const checker = join(SKILL, "evals", "assertions", "writing_checks.py");
+  ensurePython();
   const r = spawnSync("python3", [checker, file, dialect, medium], { stdio: "inherit" });
   if (r.error) {
     console.error("Could not run the checker. Python 3 is required for `detect`.");
@@ -106,6 +119,7 @@ function voiceprint(args) {
       console.error(`No sample-*.md files in ${corpus}. Add samples (sample-<channel>-<slug>.md) before building a voiceprint.`);
       process.exit(1);
     }
+    ensurePython();
     const r = spawnSync("python3", [script, "--corpus", corpus, "--out", baseline], { stdio: "inherit" });
     if (r.error) {
       console.error("Could not run the voiceprint builder. Python 3 is required.");
@@ -122,6 +136,7 @@ function voiceprint(args) {
     console.error(`No voiceprint baseline at ${baseline}. Build one first: humanise voiceprint --build`);
     process.exit(1);
   }
+  ensurePython();
   const r = spawnSync("python3", [script, "--score", file, "--baseline", baseline], { stdio: "inherit" });
   if (r.error) {
     console.error("Could not run the voiceprint scorer. Python 3 is required.");

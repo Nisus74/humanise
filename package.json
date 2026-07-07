@@ -30,8 +30,10 @@
   },
   "files": [
     "cli/",
-    "dist/",
+    "scripts/",
     "skill/",
+    "dist/",
+    "README.md",
     "LICENSE"
   ],
   "scripts": {

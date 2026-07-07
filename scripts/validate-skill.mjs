@@ -134,6 +134,40 @@ function main() {
     }
     for (const w of warn) console.log("  ! " + w);
   }
+  // Validate the Claude Code plugin artifact: a valid plugin root has the manifest
+  // under .claude-plugin/ and the skill auto-discovered at skills/<name>/SKILL.md.
+  // A stale `skills` path (the old "../skill") breaks install, so flag it here.
+  const pluginManifest = join(DIST, "claude-code", ".claude-plugin", "plugin.json");
+  const pluginSkill = join(DIST, "claude-code", "skills", "humanise", "SKILL.md");
+  const pErrs = [];
+  if (!existsSync(pluginManifest)) {
+    pErrs.push("missing dist/claude-code/.claude-plugin/plugin.json");
+  } else {
+    let pm = null;
+    try {
+      pm = JSON.parse(readFileSync(pluginManifest, "utf8"));
+    } catch (e) {
+      pErrs.push("plugin.json is not valid JSON: " + e.message);
+    }
+    if (pm) {
+      if (!pm.name) pErrs.push("plugin.json missing `name`");
+      else if (!NAME_RE.test(pm.name)) pErrs.push(`plugin name "${pm.name}" must be lowercase alphanumeric with single hyphens`);
+      if (!pm.version) pErrs.push("plugin.json missing `version`");
+      if (pm.description && /[<>]/.test(pm.description)) pErrs.push("plugin.json description must not contain angle brackets");
+      if (pm.skills) pErrs.push("plugin.json should not declare a `skills` path; skills auto-discover from skills/<name>/, and a stale path breaks install");
+    }
+  }
+  if (!existsSync(pluginSkill)) {
+    pErrs.push("missing dist/claude-code/skills/humanise/SKILL.md (plugin auto-discovery layout)");
+  }
+  if (pErrs.length) {
+    failed++;
+    console.error("FAIL claude-code plugin artifact");
+    for (const e of pErrs) console.error("  - " + e);
+  } else {
+    console.log("PASS claude-code plugin artifact");
+  }
+
   if (failed) {
     console.error(`\nSpec validation failed for ${failed} built skill(s).`);
     process.exit(1);
