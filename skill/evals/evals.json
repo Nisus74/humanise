@@ -102,6 +102,79 @@
         { "name": "no_slop_openers", "check": "no_slop_openers == true" },
         { "name": "word_count_in_range", "check": "150 <= word_count <= 280" }
       ]
+    },
+    {
+      "id": 8,
+      "channel": "investor-update",
+      "workflow": "generate",
+      "audience_tag": "aus-investors",
+      "prompt": "Write a monthly investor update (300-450 words). Open on the most important number of the period, cover progress, one miss stated plainly, runway, and one specific ask. No hype.",
+      "assertions": [
+        { "name": "no_em_dashes", "check": "em_dash_count == 0" },
+        { "name": "no_severity_1_slop", "check": "severity_1_slop_count == 0" },
+        { "name": "dialect_clean", "check": "ause_spelling_clean == true" },
+        { "name": "numbers_forward", "check": "number_count >= 5" },
+        { "name": "structural_tells_bounded", "check": "structural_tell_count <= 1" },
+        { "name": "word_count_in_range", "check": "250 <= word_count <= 500" }
+      ]
+    },
+    {
+      "id": 9,
+      "channel": "prd",
+      "workflow": "generate",
+      "audience_tag": "aus-product-team",
+      "prompt": "Write the problem statement and first section of a PRD (about 400 words) for a feature you'd genuinely propose. Name the user, the pain with evidence, and what's out of scope.",
+      "assertions": [
+        { "name": "no_em_dashes", "check": "em_dash_count == 0" },
+        { "name": "no_severity_1_slop", "check": "severity_1_slop_count == 0" },
+        { "name": "academic_register_bounded", "check": "academic_register_count <= 2" },
+        { "name": "structural_tells_bounded", "check": "structural_tell_count <= 1" },
+        { "name": "no_slop_openers", "check": "no_slop_openers == true" },
+        { "name": "word_count_in_range", "check": "300 <= word_count <= 550" }
+      ]
+    },
+    {
+      "id": 10,
+      "channel": "status-update",
+      "workflow": "generate",
+      "audience_tag": "internal-team",
+      "prompt": "Write a weekly status update (about 120 words) for your team: what shipped, what slipped and why, what's next. Direct, no throat-clearing, no manufactured candour.",
+      "assertions": [
+        { "name": "no_em_dashes", "check": "em_dash_count == 0" },
+        { "name": "no_manufactured_candour", "check": "self_narrated_honesty_count == 0" },
+        { "name": "no_slop_openers", "check": "no_slop_openers == true" },
+        { "name": "word_count_short", "check": "word_count <= 180" }
+      ]
+    },
+    {
+      "id": 11,
+      "channel": "email",
+      "workflow": "generate",
+      "audience_tag": "us-customer",
+      "prompt": "Draft a 180-word email to a US customer explaining that a feature they were promised has slipped, with the new date and what you're doing in the meantime. Straight, no spin, US register.",
+      "assertions": [
+        { "name": "no_em_dashes", "check": "em_dash_count == 0" },
+        { "name": "us_spelling", "check": "us_spelling_clean == true" },
+        { "name": "no_dialect_leak", "check": "ause_count == 0" },
+        { "name": "no_slop_openers", "check": "no_slop_openers == true" },
+        { "name": "word_count_in_range", "check": "120 <= word_count <= 250" }
+      ]
+    },
+    {
+      "id": 12,
+      "channel": "long-form",
+      "workflow": "generate",
+      "audience_tag": "aus-internal",
+      "prompt": "Write a 1600-2000 word internal strategy memo arguing one specific recommendation. Lead with the answer, tag confidence on soft numbers, separate the decided from the open, close on the decision sought. This exercises document mode: hold the global voice budget across sections.",
+      "assertions": [
+        { "name": "no_em_dashes", "check": "em_dash_count == 0" },
+        { "name": "no_severity_1_slop", "check": "severity_1_slop_count == 0" },
+        { "name": "dialect_clean", "check": "ause_spelling_clean == true" },
+        { "name": "contrast_budget_held", "check": "binary_contrast_count <= 4" },
+        { "name": "fragment_colon_bounded", "check": "fragment_colon_count <= 2" },
+        { "name": "structural_tells_bounded", "check": "structural_tell_count <= 3" },
+        { "name": "word_count_in_range", "check": "1400 <= word_count <= 2200" }
+      ]
     }
   ]
 }

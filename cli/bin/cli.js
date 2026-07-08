@@ -107,6 +107,22 @@ function voiceprint(args) {
   const baseline =
     (args.find((a) => a.startsWith("--baseline=")) || "").split("=")[1] ||
     join(base, "profile", "voiceprint.json");
+  if (args.includes("--status")) {
+    const profile = join(base, "profile");
+    if (!existsSync(profile)) {
+      console.error(`No profile at ${profile}. Run "/humanise init" first.`);
+      process.exit(1);
+    }
+    ensurePython();
+    const statusArgs = [script, "--status", "--profile", profile, "--baseline", baseline];
+    if (args.includes("--json")) statusArgs.push("--json");
+    const r = spawnSync("python3", statusArgs, { stdio: "inherit" });
+    if (r.error) {
+      console.error("Could not run the voiceprint status report. Python 3 is required.");
+      process.exit(1);
+    }
+    process.exit(r.status ?? 0);
+  }
   if (args.includes("--build")) {
     const corpus =
       (args.find((a) => a.startsWith("--corpus=")) || "").split("=")[1] ||
@@ -129,7 +145,7 @@ function voiceprint(args) {
   }
   const file = args.filter((a) => !a.startsWith("-"))[0];
   if (!file) {
-    console.error("Usage: humanise voiceprint <file> [--baseline=<path>]  |  humanise voiceprint --build [--corpus=<dir>]");
+    console.error("Usage: humanise voiceprint <file> [--baseline=<path>]  |  humanise voiceprint --build [--corpus=<dir>]  |  humanise voiceprint --status [--json]");
     process.exit(1);
   }
   if (!existsSync(baseline)) {
@@ -190,6 +206,7 @@ Usage:
   npx humanise detect <file> [dialect] [medium]         run the deterministic checker (no LLM)
   npx humanise voiceprint <file>                        score a draft's distance from your voice (advisory)
   npx humanise voiceprint --build                       build the baseline from profile/ samples
+  npx humanise voiceprint --status [--json]             corpus and voiceprint state per channel
   npx humanise init                                     scaffold your voice profile
   npx humanise build                                    rebuild dist/ from skill/
   npx humanise version

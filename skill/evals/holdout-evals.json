@@ -1,0 +1,75 @@
+{
+  "skill_name": "humanise",
+  "notes": "RESERVED held-out fixtures. Never tune an engine change against these: no editing a rule until a holdout draft passes, no drafting to their assertions, no moving a fixture here after tuning on it. They are graded only inside the proposal gate of /humanise improve (tier-2 and above changes; see self-harness-loop.md). A change validated against evals.json that fails here is tuning-to-the-battery and gets rejected. selftest.py validates the assertions resolve, which is not tuning.",
+  "evals": [
+    {
+      "id": 101,
+      "channel": "press-release",
+      "workflow": "generate",
+      "audience_tag": "aus-media",
+      "formal_channel": true,
+      "prompt": "Write a 300-word press release announcing a partnership between two named companies. Quote one executive once. Factual, no hype vocabulary.",
+      "assertions": [
+        { "name": "no_em_dashes", "check": "em_dash_count == 0" },
+        { "name": "no_severity_1_slop", "check": "severity_1_slop_count == 0" },
+        { "name": "sev_2_3_bounded", "check": "severity_2_3_slop_count <= 2" },
+        { "name": "dialect_clean", "check": "ause_spelling_clean == true" },
+        { "name": "word_count_in_range", "check": "220 <= word_count <= 400" }
+      ]
+    },
+    {
+      "id": 102,
+      "channel": "linkedin-comment",
+      "workflow": "generate",
+      "audience_tag": "aus-network",
+      "prompt": "Write a 2-3 sentence LinkedIn comment replying to a post that overstates what AI can do in your field. Disagree with one specific point, stay warm, add one fact from experience.",
+      "assertions": [
+        { "name": "no_em_dashes", "check": "em_dash_count == 0" },
+        { "name": "no_slop_openers", "check": "no_slop_openers == true" },
+        { "name": "structural_tells_bounded", "check": "structural_tell_count == 0" },
+        { "name": "word_count_short", "check": "word_count <= 80" }
+      ]
+    },
+    {
+      "id": 103,
+      "channel": "board-minute",
+      "workflow": "generate",
+      "audience_tag": "aus-board",
+      "formal_channel": true,
+      "prompt": "Write the minute (about 150 words) recording a board decision to approve a hire against a split vote. Neutral register, names, the resolution, and the dissent recorded plainly.",
+      "assertions": [
+        { "name": "no_em_dashes", "check": "em_dash_count == 0" },
+        { "name": "no_severity_1_slop", "check": "severity_1_slop_count == 0" },
+        { "name": "no_i_this_openers", "check": "i_this_opener_count == 0" },
+        { "name": "word_count_in_range", "check": "100 <= word_count <= 220" }
+      ]
+    },
+    {
+      "id": 104,
+      "channel": "email",
+      "workflow": "generate",
+      "audience_tag": "uk-partner",
+      "prompt": "Draft a 160-word email to a UK partner declining their proposed contract term, explaining why in one paragraph, and offering a specific alternative. Courteous, direct, UK register.",
+      "assertions": [
+        { "name": "no_em_dashes", "check": "em_dash_count == 0" },
+        { "name": "dialect_clean", "check": "ause_spelling_clean == true" },
+        { "name": "no_slop_openers", "check": "no_slop_openers == true" },
+        { "name": "word_count_in_range", "check": "110 <= word_count <= 230" }
+      ]
+    },
+    {
+      "id": 105,
+      "channel": "job-ad",
+      "workflow": "generate",
+      "audience_tag": "aus-candidates",
+      "prompt": "Write a 250-word job ad for a senior engineer. Say what the job actually is, one hard problem they'd own, the salary band, and what disqualifies. No mission-statement filler.",
+      "assertions": [
+        { "name": "no_em_dashes", "check": "em_dash_count == 0" },
+        { "name": "no_severity_1_slop", "check": "severity_1_slop_count == 0" },
+        { "name": "sev_2_3_bounded", "check": "severity_2_3_slop_count <= 2" },
+        { "name": "no_slop_openers", "check": "no_slop_openers == true" },
+        { "name": "word_count_in_range", "check": "180 <= word_count <= 350" }
+      ]
+    }
+  ]
+}

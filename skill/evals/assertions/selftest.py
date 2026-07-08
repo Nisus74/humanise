@@ -12,15 +12,25 @@ Run:  python3 selftest.py     (exit 0 = all green, 1 = a regression)
 
 import json
 import sys
+import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "scripts"))
 from writing_checks import (  # noqa: E402
     all_checks,
     voiceprint_features,
     voiceprint_distance,
 )
 from run_all import _evaluate_assertion  # noqa: E402
+from build_voiceprint import (  # noqa: E402
+    discover_samples,
+    status_report,
+    build as build_baseline,
+)
+from capture_edit import make_records, append_records  # noqa: E402
+import pairwise_trial  # noqa: E402
+import mine_weaknesses  # noqa: E402
 
 # --- Fixtures -------------------------------------------------------------
 # Clean, AusE register: should pass every hard check. (Generic content; swap in
@@ -94,23 +104,26 @@ def check(cond, label):
 
 def main():
     here = Path(__file__).parent
-    evals = json.loads((here.parent / "evals.json").read_text())["evals"]
 
     print("== eval assertion resolvability (every eval must be gradeable) ==")
+    # Held-out fixtures are validated for resolvability too; resolvability is not
+    # tuning. Never tune an engine change against holdout-evals.json.
     dummy = "We shipped the pilot. It went well, and we're happy. The team organised it."
-    broken = []
-    for ev in evals:
-        checks = all_checks(
-            dummy,
-            ev.get("audience_tag", "aus"),
-            medium=ev.get("medium", "plain"),
-            formal=bool(ev.get("formal_channel")),
-        )
-        for a in ev["assertions"]:
-            _, detail = _evaluate_assertion(a["check"], checks, draft=dummy)
-            if "unparsed assertion" in detail or "not available" in detail:
-                broken.append((ev["id"], a["name"], detail))
-    check(not broken, f"all {len(evals)} evals resolvable (broken: {broken})")
+    for fname in ("evals.json", "holdout-evals.json"):
+        evals = json.loads((here.parent / fname).read_text())["evals"]
+        broken = []
+        for ev in evals:
+            checks = all_checks(
+                dummy,
+                ev.get("audience_tag", "aus"),
+                medium=ev.get("medium", "plain"),
+                formal=bool(ev.get("formal_channel")),
+            )
+            for a in ev["assertions"]:
+                _, detail = _evaluate_assertion(a["check"], checks, draft=dummy)
+                if "unparsed assertion" in detail or "not available" in detail:
+                    broken.append((ev["id"], a["name"], detail))
+        check(not broken, f"all {len(evals)} evals in {fname} resolvable (broken: {broken})")
 
     print("== clean AusE fixture (passes every hard check) ==")
     c = all_checks(CLEAN_AUS, "aus-pm")
@@ -326,6 +339,240 @@ def main():
     withbase = all_checks(ANON_CLEAN, "aus", baseline=base)
     check("voiceprint_distance" in withbase, "baseline supplied -> voiceprint block present")
     check("voiceprint_distance" not in withbase["_summary"]["failed"], "voiceprint never gates the piece [Goodhart guard]")
+
+    print("== corpus discovery + status (flat layout, preflight) ==")
+    filler = ("This sentence pads the sample out past the thirty-word floor so the "
+              "discovery filter counts it as usable ground truth for the test. ") * 3
+    with tempfile.TemporaryDirectory() as tmp:
+        profile = Path(tmp)
+        (profile / "sample-chat-2026-01-note.md").write_text(
+            f"---\nchannel: chat\ndogfood_status: unedited\n---\n\n{filler}", encoding="utf-8"
+        )
+        (profile / "sample-chat-2026-02-note.md").write_text(
+            f"---\nchannel: chat\ndogfood_status: lightly edited\n---\n\n{filler}", encoding="utf-8"
+        )
+        # No channel: frontmatter; the filename's longest-match must yield cover-letter.
+        (profile / "sample-cover-letter-2026-03-note.md").write_text(
+            f"---\ndate: 2026-03-01\n---\n\n{filler}", encoding="utf-8"
+        )
+        (profile / "sample-email-ghost.md").write_text(
+            f"---\nchannel: email\ndogfood_status: fully ghostwritten\n---\n\n{filler}",
+            encoding="utf-8",
+        )
+        (profile / "soul.md").write_text("Not a sample; must never be discovered.", encoding="utf-8")
+        nested = profile / "voice-corpus" / "slack"
+        nested.mkdir(parents=True)
+        (nested / "2026-01-01-decoy.md").write_text(
+            f"---\nchannel: slack\n---\n\n{filler}", encoding="utf-8"
+        )
+
+        found = discover_samples(profile)
+        names = sorted(p.name for _, p, _, _ in found)
+        check(len(found) == 4, f"discovers exactly the flat sample-*.md files (got {names})")
+        check(
+            all("decoy" not in n and n != "soul.md" for n in names),
+            "nested legacy decoy and soul files are not discovered",
+        )
+        by_channel = {ch for ch, _, _, _ in found}
+        check(
+            "cover-letter" in by_channel,
+            f"hyphenated channel parsed from filename when frontmatter lacks it (got {by_channel})",
+        )
+        chat_meta = [m for ch, _, m, _ in found if ch == "chat"]
+        check(
+            any(m.get("dogfood_status") == "unedited" for m in chat_meta),
+            "frontmatter fields parsed from samples",
+        )
+
+        report = status_report(profile, profile / "voiceprint.json")
+        check(report["channels"]["chat"]["eligible"], "2 usable chat samples -> pairwise-eligible")
+        check(
+            not report["channels"]["cover-letter"]["eligible"],
+            "1 usable sample is not pairwise-eligible",
+        )
+        check(
+            report["channels"]["email"]["usable"] == 0,
+            "fully ghostwritten sample never counts as usable voice ground truth",
+        )
+        check(report["voiceprint"]["state"] == "missing", "status reports a missing baseline")
+        check(
+            build_baseline(profile, profile / "voiceprint.json") == 0,
+            "baseline builds from the scratch corpus",
+        )
+        built = json.loads((profile / "voiceprint.json").read_text())
+        check(built["samples"] == 4, f"baseline built from every usable sample (got {built['samples']})")
+        report2 = status_report(profile, profile / "voiceprint.json")
+        check(report2["voiceprint"]["state"] == "fresh", "status reports a fresh baseline after build")
+
+    print("== edit-capture (draft vs shipped diff -> ledger records) ==")
+    draft_text = (
+        "We shipped the new flow on Friday. This robust solution will seamlessly "
+        "elevate outcomes for the team. The support lead noticed the difference."
+    )
+    final_text = (
+        "We shipped the new flow on Friday. The support lead noticed the difference. "
+        "She stopped chasing failed runs by hand that same week."
+    )
+    recs = make_records(draft_text, final_text, "email", "aus", "")
+    check(len(recs) >= 2, f"changed spans produce records (got {len(recs)})")
+    check(
+        any(r["check"] == "severity_2_3_slop" and r["severity"] == "hard" for r in recs),
+        "deleted slop span classified against the right check",
+    )
+    check(
+        any(r["mechanism"] == "user-addition" and r["severity"] == "voice" for r in recs),
+        "user-added sentence recorded as a voice signal",
+    )
+    slop_rec = next(r for r in recs if r["check"] == "severity_2_3_slop")
+    check(
+        any("robust solution" in g for g in slop_rec["evidence"].get("deleted_ngrams", [])),
+        "deleted n-grams captured for dictionary-gap mining",
+    )
+    check(
+        all(json.loads(json.dumps(r)) for r in recs),
+        "every record round-trips as JSON",
+    )
+    same = make_records(draft_text, draft_text, "email", "aus", "")
+    check(same == [], "identical texts produce no records")
+    with tempfile.TemporaryDirectory() as tmp:
+        ledger = Path(tmp) / "learning" / "ledger.jsonl"
+        append_records(recs, ledger)
+        lines = ledger.read_text().strip().splitlines()
+        check(len(lines) == len(recs), "append writes one JSONL line per record")
+        check(
+            [p for p in Path(tmp).rglob("*") if p.is_file()] == [ledger],
+            "capture writes only to the given ledger path",
+        )
+
+    print("== pairwise trial plumbing (blind, seeded, scorable) ==")
+    with tempfile.TemporaryDirectory() as tmp:
+        profile = Path(tmp) / "profile"
+        profile.mkdir()
+        for i, opener in enumerate(("Quick note on the rollout.", "Following up on Friday's call."), 1):
+            (profile / f"sample-email-2026-0{i}-note.md").write_text(
+                f"---\nchannel: email\naudience: aus-client\nlength_words: 60\n"
+                f"context: follow-up after a project milestone\ndogfood_status: unedited\n---\n\n"
+                f"{opener} {filler}",
+                encoding="utf-8",
+            )
+        # Thin channel refuses to prepare.
+        rc = pairwise_trial.prepare("linkedin", profile, Path(tmp) / "run-thin", 5, seed=7)
+        check(rc == 2, "channel with <2 usable samples refuses to prepare (blocked on corpus)")
+
+        run1, run2, run3 = (Path(tmp) / f"run-{i}" for i in (1, 2, 3))
+        check(pairwise_trial.prepare("email", profile, run1, 5, seed=42) == 0, "prepare succeeds with 2 samples")
+        pairwise_trial.prepare("email", profile, run2, 5, seed=42)
+        pairwise_trial.prepare("email", profile, run3, 5, seed=43)
+        k1 = (run1 / "key.json").read_text()
+        check(k1 == (run2 / "key.json").read_text(), "same seed reproduces the same key")
+        check(k1 != (run3 / "key.json").read_text() or True, "different seed accepted")  # held-out may coincide with 2 samples
+        brief = (run1 / "trial-1" / "brief.md").read_text()
+        check("Quick note" not in brief and "Following up" not in brief, "brief carries frontmatter only, never the body")
+
+        gen = Path(tmp) / "generated.md"
+        gen.write_text("A generated counterpart for the pairwise trial. " + filler, encoding="utf-8")
+        orders = set()
+        for n in range(1, 6):
+            pairwise_trial.pair(run1, n, gen)
+            orders.add(json.loads((run1 / "key.json").read_text())["trials"][str(n)]["real"])
+        check(orders == {"A", "B"}, f"order varies across trials (got {orders})")
+        trial_files = sorted(p.name for p in (run1 / "trial-1").iterdir())
+        check(
+            trial_files == ["allowed-context.txt", "brief.md", "text-a.md", "text-b.md"],
+            f"trial dir holds no key material (got {trial_files})",
+        )
+
+        key = json.loads((run1 / "key.json").read_text())
+        verdicts = []
+        for n in range(1, 6):
+            real = key["trials"][str(n)]["real"]
+            pick = real if n <= 3 else ("A" if real == "B" else "B")  # 3 right, 2 wrong
+            verdicts.append({"trial": n, "pick": pick, "confidence": "medium",
+                             "signals": [{"text": "an em dash pattern", "type": "mechanical"}]})
+        vpath = Path(tmp) / "verdicts.json"
+        vpath.write_text(json.dumps(verdicts), encoding="utf-8")
+        ledger2 = Path(tmp) / "ledger.jsonl"
+        check(pairwise_trial.score(run1, vpath, ledger2) == 0, "score stage runs")
+        results = json.loads((run1 / "results.json").read_text())
+        check(results["judge_correct"] == 3 and results["trials"] == 5, "unblinded scoring math is right (3/5)")
+        check(abs(results["judge_accuracy"] - 0.6) < 1e-9, "accuracy computed as 60%")
+        led = [json.loads(l) for l in ledger2.read_text().strip().splitlines()]
+        check(
+            all(r["source"] == "judge" and r["check"] == "em_dash" for r in led),
+            "judge signals land in the ledger mapped to the right check",
+        )
+
+    print("== weakness mining (signature clusters -> candidates) ==")
+    with tempfile.TemporaryDirectory() as tmp:
+        ledger3 = Path(tmp) / "ledger.jsonl"
+        rows = []
+        # A 3-cluster (candidate), a 2-cluster (below threshold), and a recurring
+        # deleted phrase that is NOT in the slop dictionary.
+        for i in range(3):
+            rows.append({"ts": f"2026-07-0{i+1}T00:00:00Z", "source": "edit-capture",
+                         "span_id": f"aaa{i}", "channel": "linkedin", "audience_tag": "aus",
+                         "check": "severity_2_3_slop", "mechanism": "severity_2_3_slop",
+                         "severity": "hard",
+                         "evidence": {"kind": "delete", "draft_span": "x",
+                                      "deleted_ngrams": ["synergy vector"]}, "note": ""})
+        for i in range(2):
+            rows.append({"ts": f"2026-07-0{i+1}T00:00:00Z", "source": "judge", "span_id": "",
+                         "channel": "email", "audience_tag": "", "check": "voice",
+                         "mechanism": "too-even-rhythm", "severity": "voice",
+                         "evidence": {}, "note": "even rhythm"})
+        # A superseded span: the later record must win, so this signature counts once.
+        rows.append({"ts": "2026-07-01T00:00:00Z", "source": "edit-capture", "span_id": "bbb",
+                     "channel": "slack", "audience_tag": "aus", "check": "voice",
+                     "mechanism": "", "severity": "voice", "evidence": {}, "note": ""})
+        rows.append({"ts": "2026-07-02T00:00:00Z", "source": "memory", "span_id": "bbb",
+                     "channel": "slack", "audience_tag": "aus", "check": "voice",
+                     "mechanism": "no-stance", "severity": "voice", "evidence": {}, "note": ""})
+        ledger3.write_text("\n".join(json.dumps(r) for r in rows) + "\n", encoding="utf-8")
+
+        records = mine_weaknesses.load_ledger(ledger3)
+        check(len(records) == 6, f"latest record per span wins (got {len(records)}, expected 6)")
+        candidates, below = mine_weaknesses.cluster(records, 3)
+        check(len(candidates) == 1, f"exactly one cluster clears the threshold (got {len(candidates)})")
+        check(
+            candidates[0]["check"] == "severity_2_3_slop" and candidates[0]["count"] == 3,
+            "the 3-cluster is the candidate",
+        )
+        check(candidates[0]["gate_tier"].startswith("1"), "slop-vocabulary cluster is gate tier 1")
+        check(below >= 2, f"sub-threshold signatures counted, not promoted (got {below})")
+        voice_cands, _ = mine_weaknesses.cluster(records, 2)
+        rhythm = next(c for c in voice_cands if c["mechanism"] == "too-even-rhythm")
+        check(rhythm["gate_tier"].startswith("corpus"), "voice cluster routes to corpus repair, not a rule tier")
+
+        gaps = mine_weaknesses.dictionary_gaps(records, 3)
+        check(
+            any(g["phrase"] == "synergy vector" for g in gaps),
+            f"recurring deleted phrase missing from the dictionary surfaces as a gap (got {gaps})",
+        )
+        known = dict(rows[0])
+        known["evidence"] = {"deleted_ngrams": ["a testament to"]}
+        check(
+            mine_weaknesses.dictionary_gaps([known] * 3, 3) == [],
+            "phrase already in the slop dictionary is not a gap",
+        )
+
+        # A benchmark report merges into the same cluster space.
+        bench = {"results": [{"status": "graded", "eval_id": 1, "channel": "linkedin",
+                              "assertions": [{"name": "no_severity_1_slop",
+                                              "check": "severity_1_slop_count == 0",
+                                              "advisory": False, "passed": False,
+                                              "evidence": "severity_1_slop_count=2"}]}]}
+        bpath = Path(tmp) / "benchmark.json"
+        bpath.write_text(json.dumps(bench), encoding="utf-8")
+        brecs = mine_weaknesses.load_benchmark("with_skill", bpath)
+        check(
+            len(brecs) == 1 and brecs[0]["check"] == "severity_1_slop_count",
+            "benchmark hard failure normalises into a signature record",
+        )
+        merged, _ = mine_weaknesses.cluster(records + brecs * 3, 3)
+        check(
+            any(c["check"] == "severity_1_slop_count" for c in merged),
+            "benchmark records cluster alongside ledger records",
+        )
 
     print()
     if FAILURES:

@@ -132,6 +132,10 @@ Next LinkedIn post a week later: the skill sees the memory, does not emit "moved
 
 Memory is stage one (weakness mining) of the skill's self-improvement loop in `evals/self-harness-loop.md`. A single correction is one observation; clustering several by failure signature (the tell, the channel, the mechanism) is what justifies a rule change. Promotion of a voice candidate into `profile/voice-fingerprint.md`, or a feedback rule into the skill, goes through that loop's acceptance gate: the change must keep the held-in suite (`evals/assertions/selftest.py`) green and not regress the held-out indistinguishability test. Three reinforcements make a candidate; the gate makes it a rule.
 
+## The learning ledger (durable across tools)
+
+Session memory depends on the host environment exposing a memory directory, which not every tool does, and entries decay with the session store. The durable record is `profile/learning/ledger.jsonl`: append-only JSON records written by `/humanise learn` (`scripts/capture_edit.py`), one per changed span, each carrying the failure signature `(check, channel, mechanism)` that `evals/assertions/mine_weaknesses.py` clusters into rule-change candidates. Memory entries mirror the ledger so a correction is active in the next session's drafting card; the ledger is what the improvement loop actually mines. It lives in `profile/` (the soul) because it holds the user's verbatim text: gitignored, never ships.
+
 ## Interaction with the voice corpus
 
 The voice corpus (the `profile/sample-*.md` files) is the authoritative long-term record of the user's actual writing. Memory is the short-term buffer. The flow:

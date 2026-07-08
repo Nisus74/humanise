@@ -33,6 +33,8 @@ humanise is invoked as `/humanise <command>` (one skill, a few verbs). Detail in
 - **rewrite** — take AI-generated text and rewrite it in your voice. (`commands/rewrite.md`)
 - **check** — run the deterministic checker on a draft, no LLM. (`commands/check.md`)
 - **fingerprint** — regenerate your fingerprint after adding corpus samples. (`commands/fingerprint.md`)
+- **learn** — capture what you changed in a shipped draft, into the learning ledger. (`commands/learn.md`)
+- **improve** — run one cycle of the self-improvement loop: benchmark, blind voice test, mine, propose, gate. (`commands/improve.md`)
 
 In the terminal, `npx humanise install` installs the skill into your tool and `npx humanise detect <file>` runs the checker.
 
@@ -114,6 +116,7 @@ Context comes in two tiers. Tier one is the drafting card: the small set of mate
 - `evals/self-harness-loop.md`: The propose, evaluate, accept gate any change to this skill must clear (held-in suite plus held-out voice test, tiered by stakes). Read before editing the skill.
 - `CHANGELOG.md`: The auditable lineage of changes. Add an entry for any promoted change.
 - `evals/evals.json`, `evals/assertions/` (battery plus `selftest.py`), and `evals/indistinguishability.md`: The test cases, the objective assertion battery, the runnable self-test, and the pairwise voice test. Used for benchmarking, not live writing.
+- `commands/improve.md` and `commands/learn.md`: The runnable loop. `learn` captures the user's real edits into `profile/learning/ledger.jsonl`; `improve` runs benchmark, blind voice test, mining (`evals/assertions/mine_weaknesses.py`), and the gated proposal stage. `evals/holdout-evals.json` is reserved: never tune a change against it.
 
 ---
 

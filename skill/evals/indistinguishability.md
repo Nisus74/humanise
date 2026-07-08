@@ -17,6 +17,10 @@ This test needs a model and human attention, so it's costly to run on every draf
 4. **Score.** Run at least 5 trials per channel (re-randomise order each time; vary the held-out sample if the corpus allows). The skill's score is the judge's error rate: 50% (chance) means indistinguishable, which is the target. Record the judge's stated signals regardless of whether it guessed right; the signals are the repair list.
 5. **Log.** Append results to `evals/indistinguishability-log.md`: date, channel, trials, judge accuracy, top recurring signals, and what was changed in response.
 
+## Automated path
+
+`/humanise improve` runs this protocol end to end, with the deterministic parts scripted in `assertions/pairwise_trial.py`: `--prepare` selects the held-out sample per trial (seeded, replayable) and writes a frontmatter-only brief plus an allowed-context manifest; the `eval-generator` subagent writes the counterpart from that brief; `--pair` order-randomises each trial's pair with the blinding key kept out of the trial directories; one fresh judge subagent per trial returns a machine-readable verdict; `--score` unblinds, computes accuracy, feeds the judge's signals into the learning ledger, and prints the log row. The protocol above stays the authority; the script just makes it repeatable. Full trial artefacts land under `profile/learning/runs/` (never committed); only the aggregate row lands here in the log.
+
 ## Reading the results
 
 - **Judge accuracy near 50%:** the voice transfers. Move to the next channel.

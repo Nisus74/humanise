@@ -25,10 +25,12 @@ If a change only helps one person's writing, it's a profile change (their fork).
 Every engine change clears the gate in `skill/evals/self-harness-loop.md`:
 
 1. **Held-in green:** `npm test` (the Python selftest) passes. Add a fixture if you add a detector.
-2. **Held-out not regressed:** the pairwise voice test (`skill/evals/indistinguishability.md`) does not get worse.
+2. **Held-out not regressed:** the pairwise voice test (`skill/evals/indistinguishability.md`) and the reserved fixtures in `skill/evals/holdout-evals.json` do not get worse. Never tune a change against the holdout file; it exists to catch tuning-to-the-battery.
 3. **Auditable:** add a `skill/CHANGELOG.md` entry (target, surface, evidence, eval result).
 
 Keep edits minimal: change only the surface the failure needs, preserve what already passes, no broad rewrites.
+
+The gate is runnable end to end via `/humanise improve` (benchmark, blind voice test, mining, gated proposals); `/humanise learn` captures the user's real edits into `skill/profile/learning/ledger.jsonl`. Everything under `skill/profile/learning/` is soul: the user's verbatim text, gitignored, never shipped.
 
 ## Commands
 

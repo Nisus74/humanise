@@ -37,12 +37,19 @@ npm test             # runs the held-in selftest (Python)
 
 The acceptance gate for engine changes is in `skill/evals/self-harness-loop.md`: the selftest stays green and the held-out voice test is not regressed. CI runs the selftest on every PR.
 
+## Run the loop
+
+The self-improvement loop is runnable, not just documented. `/humanise learn` (inside your agent) diffs a shipped text against the skill's draft with `skill/scripts/capture_edit.py` and appends failure-signature records to `skill/profile/learning/ledger.jsonl`. `/humanise improve` runs a full cycle: generator subagents draft every `evals.json` fixture (optionally an untreated baseline too), `run_all.py` grades them, `pairwise_trial.py` runs the blind indistinguishability trials for any channel with two or more usable samples, `mine_weaknesses.py` clusters everything at or past three occurrences into `candidates.json`, and a proposer subagent drafts bounded edits that still clear the tiered gate before anything ships.
+
+Two hard rules. `skill/evals/holdout-evals.json` is reserved held-out: never tune a change against it, never draft to its assertions. And everything under `skill/profile/learning/` is soul: it holds your verbatim text and run transcripts, stays gitignored, and never appears in `dist/`; only aggregate rows land in the committed `evals/indistinguishability-log.md`.
+
 ## CLI
 
 ```
 npx humanise install [--provider=<name>] [--global]
 npx humanise detect <file> [dialect] [medium]
 npx humanise voiceprint <file>          # score a draft against your voice; --build builds the baseline
+npx humanise voiceprint --status        # per-channel corpus counts, pairwise-test eligibility, baseline freshness
 npx humanise init
 npx humanise build
 ```

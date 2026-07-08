@@ -29,8 +29,8 @@ Keep edits minimal: change only the surface needed, preserve everything that alr
 
 A change is promoted only if it clears a non-regressive gate across two splits:
 
-- **Held-in** = the assertion battery and `evals/assertions/selftest.py`. The change must keep these green (and ideally turn a red case green).
-- **Held-out** = the pairwise indistinguishability test (`evals/indistinguishability.md`) plus any reserved fixtures the change's author did not tune against. The change must not lower judge-confusion or voice fidelity here.
+- **Held-in** = the assertion battery (`evals.json`) and `evals/assertions/selftest.py`. The change must keep these green (and ideally turn a red case green).
+- **Held-out** = the pairwise indistinguishability test (`evals/indistinguishability.md`) plus the reserved fixtures in `evals/holdout-evals.json`, which nobody tunes against: no editing a rule until a holdout draft passes, no drafting to their assertions. The change must not lower judge-confusion, voice fidelity, or the holdout pass rate.
 
 Acceptance rule (from the paper): promote only if the change **improves at least one split and degrades neither**. A change that lifts the battery but makes the voice test worse is rejected, because tuning to the regex instead of the voice is its own failure. Log rejected proposals too; a rejection is evidence.
 
@@ -47,6 +47,12 @@ The paper's stated limit: pass-rate non-regression alone isn't enough for high-s
 | Absolute rule (the voice-fingerprint "absolute rules" section) | The above + an adversarial read (`../agents/adversarial-reviewer.md`) **and** the user's sign-off |
 
 The last row exists because an absolute-rule change alters the voice the skill is built to protect, which a green battery alone does not authorise.
+
+---
+
+## Running the loop
+
+The three stages are executed by `/humanise improve` (`commands/improve.md`); this file stays the authority on what counts as evidence and what clears the gate. The deterministic parts are scripted: `scripts/capture_edit.py` turns the user's real edits into ledger records, `evals/assertions/mine_weaknesses.py` clusters the ledger, benchmark reports, and judge signals into `candidates.json` (stage 1), the `improvement-proposer` subagent drafts the bounded proposals (stage 2), and the orchestrator runs the tiered gate before anything ships (stage 3). Evidence accumulates in `profile/learning/ledger.jsonl`, which holds the user's verbatim text and therefore never leaves `profile/`. Rejected proposals are appended to the ledger too; a rejection is evidence.
 
 ---
 
