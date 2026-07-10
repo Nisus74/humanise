@@ -1,5 +1,7 @@
 # Setup: your first 15 minutes
 
+New to agent skills? Read [getting-started.md](getting-started.md) first; it covers install and your first command. This page is the profile deep-dive.
+
 The goal is a working, personalised skill, fast. The corpus is the bottleneck for everyone, so the steps are ordered to get you drafting in your voice with the least friction.
 
 ## 1. Make your profile (1 min)

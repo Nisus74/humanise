@@ -43,6 +43,8 @@ The self-improvement loop is runnable, not just documented. `/humanise learn` (i
 
 Two hard rules. `skill/evals/holdout-evals.json` is reserved held-out: never tune a change against it, never draft to its assertions. And everything under `skill/profile/learning/` is soul: it holds your verbatim text and run transcripts, stays gitignored, and never appears in `dist/`; only aggregate rows land in the committed `evals/indistinguishability-log.md`.
 
+The subagents this loop spawns (the generator, the blind judge, the proposer) are documented in [agents.md](agents.md).
+
 ## CLI
 
 ```

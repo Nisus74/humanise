@@ -1,5 +1,7 @@
 # Platforms
 
+New here? [getting-started.md](getting-started.md) walks through install end to end. This page is the per-tool reference.
+
 humanise is one portable skill (`skill/`) plus a thin adapter per platform. The skill content is identical across platforms; only the entry point differs.
 
 ## Claude Code
