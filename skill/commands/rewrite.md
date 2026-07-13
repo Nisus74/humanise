@@ -1,9 +1,14 @@
-# /humanise rewrite
+# humanise: rewrite
 
-Rewrite mode. Take existing AI-generated text and rewrite it in the user's voice.
+Rewrite existing text without changing what the user means.
 
-1. Read `profile/soul.md`, `profile/voice-fingerprint.md`, and the nearest `profile/sample-*.md` samples.
-2. Run the editing workflow in `SKILL.md`: assess, diagnose, rewrite preserving the user's intent, two-pass sweep, self-critique, verify.
-3. Present the rewrite with the compact evidence (script clean, anchor diff, adversarial read for external pieces).
+1. Choose light edit, voice rewrite or editorial reconstruction. Use the least invasive mode that
+   satisfies the request.
+2. Build the meaning contract before changing the text.
+3. Load direct voice evidence for the channel and relationship.
+4. Rewrite through the content, rhetoric, voice and surface passes in `SKILL.md`.
+5. Compare the result with the meaning contract. Restore any lost fact, caveat, certainty or ask.
+6. Present the rewrite first. Explain only material decisions or source problems.
 
-Use when the user pastes text and asks to humanise, de-slop, or "make this sound like me".
+Do not reproduce the source's AI-shaped structure with replacement vocabulary. Do not add opinions,
+facts or personal stories the user did not supply.

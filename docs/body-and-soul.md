@@ -1,29 +1,55 @@
 # Body and soul
 
-humanise is built on one idea: the rules that strip AI tells are universal, but the voice that replaces them is personal. So the skill splits in two.
+humanise keeps shared writing knowledge separate from private evidence about one writer.
 
 ## The body
 
-The engine. Shared by everyone, never personalised:
+The body is the open-source engine:
 
-- `references/ai-slop-dictionary.md` and `references/structural-tells.md`: the vocabulary and structural patterns that flag writing as machine-made.
-- `references/mechanical-sweep.md` and `evals/assertions/writing_checks.py`: the two-pass sweep and the Python checker that automates most of it.
-- `references/channel-playbooks.md`, `references/tone-register.md`, `references/dialect-*.md`: the coverage model across any channel, register and dialect.
-- `evals/`: the test harness and the self-improvement loop.
+- the meaning and reader workflow;
+- transformation boundaries;
+- channel, register and dialect guidance;
+- common vocabulary and structural risks;
+- verification and learning procedures.
 
-AI tells are artefacts of how models generate text; they aren't facts about you. Everyone runs the same body.
+The body should contain behaviour that generalises. It must not encode one person's favourite phrases
+or turn a temporary model habit into a permanent universal ban.
 
 ## The soul
 
-The profile. Entirely yours, never shared upstream:
+The soul is the private profile:
 
-- `soul.md`: what you believe about writing and won't budge on. The convictions, the taste, the hills you'll die on. This is the part the rules can't give you.
-- `voice-fingerprint.md`: how you actually write, generated from your samples: opening moves, sentence habits, the things you never do.
-- `sample-*.md` files: real samples of your writing, flat in `profile/`. The ground truth.
-- `absolute-rules.md`, `identity.md`, `channels.md`: your dialect, your non-negotiables, your channel set.
+- `soul.md`: the writer's convictions and ethical lines;
+- `voice-decisions.md`: what they select, judge and emphasise, with evidence and confidence;
+- `voice-fingerprint.md`: the synthesised model across supported channels;
+- `sample-*.md`: real writing;
+- `negative-examples.md`: plausible text they reject and why;
+- `relationships.md`: confirmed differences between readers;
+- `absolute-rules.md`: a small set of explicit non-negotiables;
+- learning history: proposed drafts paired with final edits.
+
+The soul answers a harder question than "which words does this person use?" It records what they think
+is worth saying, how they reach a judgement, how they position themselves with a reader and what they
+would never claim.
 
 ## Why the split matters
 
-A mechanical fingerprint can make writing clean and even rhythmically yours. It can't give it a point of view. That's what the soul is for: the fingerprint captures *how* you write, the soul captures *why*. When a mechanical rule and a conviction disagree, the soul wins.
+A clean engine can remove generic model habits. It cannot infer a person's point of view from nothing.
+A surface fingerprint can copy cadence while making decisions the writer would reject. Direct samples,
+negative examples and final edits supply the missing evidence.
 
-It's also what makes humanise forkable. The body is the open-source project everyone improves together, behind a regression gate. The soul is the thing you keep private and never commit. Fork the body; transplant your soul.
+When the body and soul conflict, use this order:
+
+1. Current user instruction
+2. Meaning and factual fidelity
+3. Direct channel and relationship evidence
+4. Confirmed profile rules
+5. Engine defaults
+
+## Privacy
+
+The soul may contain private correspondence and unpublished work. Keep it in a user-scope install where
+possible. Project installs must exclude it from Git locally and pass `humanise doctor`. Redact samples
+and never store credentials or material the writer is not allowed to provide.
+
+Fork the body. Keep the soul private.

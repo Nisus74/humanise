@@ -1,130 +1,99 @@
-# Commands
+# Commands and modes
 
-humanise is one skill with a few verbs. Inside your agent you call them as `/humanise <command>`. Some also have a terminal equivalent through the CLI (`node cli/bin/cli.js <verb>`, or `npx humanise <verb>` once published). New here? Read [getting-started.md](getting-started.md) first, then come back for the detail.
+humanise is one skill with optional mode words. Invocation depends on the host:
 
-The commands, grouped by job:
+```text
+Codex:                $humanise rewrite
+Claude direct skill:  /humanise rewrite
+Claude plugin:        /humanise:humanise rewrite
+Cursor:               /humanise rewrite
+Other hosts:          ask the agent to use humanise in rewrite mode
+```
 
-| Command | Job | Group |
-| --- | --- | --- |
-| `init` | Set up your voice profile | Setup |
-| `guide` | Draft new content in your voice | Everyday |
-| `rewrite` | Rewrite existing AI text in your voice | Everyday |
-| `check` | Run the deterministic checker (no model) | Everyday |
-| `fingerprint` | Rebuild your voice fingerprint | Setup |
-| `learn` | Capture your edits as evidence | Self-improvement |
-| `improve` | Run one cycle of the self-improvement loop | Self-improvement |
-
----
+The agent may also select humanise automatically when a request matches the skill description.
 
 ## `init`
 
-**What it is.** One-time setup that writes your voice profile so every later command sounds like you.
+Starts progressive voice setup. One real sample is enough for the quick path. Humanise learns the
+sample's purpose and reader, offers distinct rewrite directions, records the user's choice as
+provisional evidence and produces a personalised result.
 
-**When to use it.** The first time you run humanise, or whenever you have no `profile/` yet.
+Use deeper setup later to add a soul, several channels, negative examples, relationship overlays and
+an evidence-backed fingerprint.
 
-**How to run it.** `/humanise init` inside your agent. This is the guided version: the agent asks the soul questions, helps you gather samples, and builds your fingerprint. There is also a smaller terminal command, `node cli/bin/cli.js init`, that only scaffolds the empty profile files from the template; it does not do the interview. For a real voice, use the in-agent version.
-
-**Reads / writes.** Copies `profile.template/` to `profile/`, then writes `profile/soul.md`, `profile/identity.md`, `profile/absolute-rules.md`, your `sample-*.md` files, and `profile/voice-fingerprint.md`. Everything under `profile/` is gitignored and never committed.
-
-**Example.** You say "set up humanise". The agent walks you through what you believe about writing, collects five to ten real samples with a fetch prompt per channel, and generates your fingerprint. Budget about ten minutes.
-
-See also: [SETUP.md](SETUP.md) for the manual 15-minute walkthrough.
-
----
+Terminal `humanise init` only scaffolds `profile/` and the canonical `config.yml`; the in-agent mode
+runs the interview and calibration.
 
 ## `guide`
 
-**What it is.** Draft mode. Writes new content in your voice from the first line.
+Drafts new material. Humanise builds a meaning contract and reader model, loads the nearest direct
+samples, assesses evidence confidence and writes through separate content, rhetoric, voice and surface
+passes.
 
-**When to use it.** Before writing, when you want the draft to sound like you from the start rather than fixing a generic draft afterwards.
+Example:
 
-**How to run it.** `/humanise guide` inside your agent, with your brief.
-
-**Reads / writes.** Reads `profile/soul.md`, `profile/voice-fingerprint.md`, the nearest `profile/sample-*.md` samples for the channel, and the channel playbook in `references/channel-playbooks.md`. Writes the draft into your session; nothing is saved to disk unless you ask.
-
-**Example.** "Draft a LinkedIn post about the onboarding launch." The skill names the point, drafts from your closest samples, runs both sweep passes and the checker, self-critiques, and presents the result with the evidence so you can see what it changed.
-
-**Subagents.** For an external piece that carries checkable claims, `guide` spawns the [adversarial-reviewer](agents.md#adversarial-reviewer) and the [fact-brief-checker](agents.md#fact-brief-checker) before it hands the draft back.
-
----
+```text
+$humanise guide
+Draft an email asking our pilot customer to approve the revised timeline. They are frustrated about
+the previous slip. The new date is 18 August and the validation plan is attached.
+```
 
 ## `rewrite`
 
-**What it is.** Edit mode. Takes existing AI-generated text and rewrites it in your voice.
+Edits existing text at one of three strengths:
 
-**When to use it.** When you paste text and want to de-slop it or make it sound like you.
+- light edit for errors and friction;
+- voice rewrite for new sentences and flow without changing the argument;
+- editorial reconstruction when the user asks to challenge the structure or point.
 
-**How to run it.** `/humanise rewrite` inside your agent, with the text to fix.
-
-**Reads / writes.** Same profile inputs as `guide`. Preserves the original intent while stripping the tells; presents the rewrite with a diff of the anchor changes.
-
-**Example.** You paste a paragraph a model wrote, full of <!--sweep-ignore-->"leverage" and "seamless"<!--/sweep-ignore--> and an em dash. The skill diagnoses the tells, rewrites preserving your point, runs the checker until it is clean, and shows the before and after.
-
-**Subagents.** As with `guide`, external pieces get an [adversarial-reviewer](agents.md#adversarial-reviewer) read, and a [fact-brief-checker](agents.md#fact-brief-checker) pass where a brief or source exists.
-
----
+Humanise defaults to the least invasive mode that can satisfy the request.
 
 ## `check`
 
-**What it is.** The deterministic checker on its own, with no model involved. Wraps `evals/assertions/writing_checks.py`.
+Inspects mechanical and structural risks without pretending that a clean result proves voice quality.
 
-**When to use it.** To gate a draft before you ship it, or in CI. It is the fastest way to catch the mechanical tells, and it runs anywhere Python 3 does.
+```sh
+humanise detect <file> [dialect] [medium]
+```
 
-**How to run it.**
-
-- Terminal: `node cli/bin/cli.js detect <file> [dialect] [medium]` (dialect defaults to `aus`; also `us`, `uk`).
-- In-agent: `/humanise check`. The agent writes the draft to a temp file, runs the checker, and reads back the summary (the `failed` list and the `structural_density` block).
-
-**Reads / writes.** Reads the file you point at. Writes nothing; it prints a report and exits non-zero on failure.
-
-**Example.** `node cli/bin/cli.js detect draft.md` prints the slop words, the em dashes, the template openers, and the structural density, then exits 1 if any hard check failed. Drop it into a pre-commit hook or a CI step.
-
-The checker is the body; it never sees your soul, so a clean run is necessary but not sufficient. Pair it with the read-aloud test and, for external pieces, the [adversarial-reviewer](agents.md#adversarial-reviewer).
-
----
+The checker is local and requires Python 3. Advisory counts prompt a review. Never treat them as
+targets.
 
 ## `fingerprint`
 
-**What it is.** Regenerates your voice fingerprint from your corpus, and rebuilds the numeric voiceprint baseline alongside it.
+Rebuilds `profile/voice-fingerprint.md` after useful evidence is added. It reads raw samples, negative
+examples and draft-to-final edits. Every pattern should include scope, evidence and a confidence label.
 
-**When to use it.** After you add `profile/sample-*.md` samples: roughly every five new samples, or whenever a channel gets real coverage for the first time.
-
-**How to run it.** `/humanise fingerprint` inside your agent. It follows `scripts/generate-fingerprint.md`: read every sample, extract the descriptors with evidence, measure the tripwires, and write `profile/voice-fingerprint.md`. The same step rebuilds the voiceprint baseline (`node cli/bin/cli.js voiceprint --build`).
-
-**Reads / writes.** Reads every `profile/sample-*.md`. Writes `profile/voice-fingerprint.md` and `profile/voiceprint.json`, and notes the gaps (channels with no samples).
-
-**Example.** You paste three new blog posts as samples, then run `/humanise fingerprint`. Your fingerprint now reflects how you open a blog post, and the voiceprint can flag a draft that drifts from it.
-
-The fingerprint does more for your voice than any rule. More samples, better voice.
-
----
+Run it after roughly five useful additions or when a channel first gains direct coverage.
 
 ## `learn`
 
-**What it is.** Captures what you changed in a draft the skill wrote, so the loop can learn from your edits. Every rewrite, cut, or addition becomes a record the improvement loop can mine.
+Captures the difference between the skill's proposed draft and the text the user actually sent. Record
+the changed decision, channel, relationship and reason, when known. The final edit is stronger evidence
+than the draft it replaced.
 
-**When to use it.** After you ship a piece the skill drafted, when your final version differs from what it handed you. The gap between draft and shipped is the signal.
-
-**How to run it.** `/humanise learn` inside your agent. Give it the skill's draft and your shipped text. It runs `scripts/capture_edit.py`, which diffs the two sentence by sentence, classifies each changed span, and appends records to `profile/learning/ledger.jsonl`. For spans no automated check explains, the agent classifies the change against a fixed vocabulary (`too-even-rhythm`, `no-stance`, `too-generic`, `synonym-cycling`, `opener-template`, `register-miss`, `wrong-fact`, or `other:<slug>`).
-
-**Reads / writes.** Reads the two texts. Appends to `profile/learning/ledger.jsonl` (the soul: your verbatim text, gitignored, never shipped). Mirrors durable corrections into session memory where the environment has a memory directory.
-
-**Example.** The skill drafted an investor update; you cut "we are excited to share" and swapped a vague claim for a real number before sending. `/humanise learn` records both edits with their failure signature, then reports which signatures are approaching the promotion threshold (three occurrences makes a candidate).
-
-See [memory-loop.md](../skill/references/memory-loop.md) for how the ledger feeds the loop.
-
----
+Ask permission before storing user text. Skip code, quotations, changed briefs and facts corrected only
+because the source was wrong.
 
 ## `improve`
 
-**What it is.** Runs one full cycle of the self-improvement loop: benchmark the skill's output, run the blind voice test, mine the accumulated evidence for weaknesses, and gate any proposed engine change.
+Runs the advanced engine-maintenance workflow. Maintainers use it to improve the shared skill. It does
+not belong in ordinary writing work. It benchmarks, mines repeated failures and proposes bounded
+changes behind the project's acceptance gate.
 
-**When to use it.** Periodically, after `learn` has captured a batch of edits, or whenever you want to check whether the engine has a fixable weakness backed by evidence.
+Personal voice corrections usually belong in the private profile. Reserve the shared engine for
+behaviour that generalises.
 
-**How to run it.** `/humanise improve` inside your agent. Flags: `--baseline` also generates untreated comparison drafts; `--skip-benchmark` and `--skip-indist` run a partial cycle. The loop's rules live in `evals/self-harness-loop.md`; the command executes them.
+## CLI commands
 
-**Reads / writes.** Reads `evals/evals.json`, your ledger, and your eligible corpus channels. Writes run artefacts to `profile/learning/runs/<timestamp>/` (gitignored), appends aggregate rows to `evals/indistinguishability-log.md`, and, for any change you accept, edits the named engine surface and adds a `CHANGELOG.md` entry.
-
-**Example.** After a fortnight of `learn` captures, `/humanise improve` benchmarks every fixture, runs blind pairwise trials for each channel with two or more usable samples, clusters the evidence, and presents ranked proposals. You accept one; the command applies the smallest edit, runs the gate for its tier, and logs the change. An empty candidate set is a healthy result: the loop is running, evidence is still accumulating.
-
-**Subagents.** `improve` orchestrates four of the five subagents: the [eval-generator](agents.md#eval-generator) drafts the benchmark and pairwise texts, the [indistinguishability-judge](agents.md#indistinguishability-judge) runs the blind voice test, the [improvement-proposer](agents.md#improvement-proposer) drafts bounded rule changes, and the [adversarial-reviewer](agents.md#adversarial-reviewer) reads any tier-3 change before it can land.
+```text
+humanise install --provider=<name> [--global|--project]
+humanise doctor --provider=<name> [--global|--project]
+humanise init [--provider=<name>] [--global|--project]
+humanise detect <file> [dialect] [medium]
+humanise voiceprint <file>
+humanise voiceprint --build
+humanise voiceprint --status
+humanise build
+humanise version
+```

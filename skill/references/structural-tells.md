@@ -43,7 +43,7 @@ The pattern is a detection tell at the syntactic level. Detection tools flag the
 
 For empty contrasts, state the positive claim and drop the negation. "Put the customer first" does the same work as "It's not about the product, it's about the customer."
 
-**Load-bearing form (allow, but budget: one per piece).** The contrast names what actually mattered by rejecting a plausible-but-wrong alternative a reader would reasonably assume. The "not X" is a specific candidate, not an abstraction; the "but Y" is the specific thing that was true instead. Examples of the move working:
+**Load-bearing form (allow when earned).** The contrast names what actually mattered by rejecting a plausible-but-wrong alternative a reader would reasonably assume. The "not X" is a specific candidate, not an abstraction; the "but Y" is the specific thing that was true instead. Examples of the move working:
 
 - "That's what convinced seven organisations across four sectors, not the accuracy figure." (The reader would reasonably assume accuracy was the sell. Naming what actually closed the deal is the whole point of the sentence.)
 - "That governance challenge, not the model itself, is what attracted me to Provation's Mira iPro Insights." (Reframes the candidate's apparent interest away from the obvious technical hook toward the harder, more specific problem.)
@@ -57,11 +57,11 @@ The same negate-then-reveal move wears several surfaces: classic ("it's not X, i
 
 If you remove the negation, does the remaining sentence still say the same thing? If yes, the contrast was empty and the rewrite was already there in the positive half. If removing the negation collapses a real reframe, the contrast was load-bearing and naming the plausible-wrong alternative is the argument.
 
-### Budget
+### Repetition
 
-At most one load-bearing contrast per piece. More than one starts to read as template, and the reader stops experiencing the reframes as discoveries and starts seeing them as a rhetorical move the writer is leaning on.
-
-On a long document the budget is a density, not a flat count. A 30-page memo with one load-bearing contrast per section has sixteen of them, and that reads as a tic no matter how good each one is in isolation. Hold it to roughly one per 600 words across the whole document, measured globally, not reset per section. `writing_checks.py` (`binary_contrast_density`) reports the contrasts-per-1000-words rate so you can see when a long piece has drifted over the line. The per-section feeling of "this is my one allowed contrast" is exactly the trap: each section gets its one, and the document accumulates fifty.
+The problem is accumulation, not a universal allowance. If the same contrast shape keeps returning,
+the reader starts seeing the template instead of the argument. Review density across a long document,
+but do not rewrite an earned contrast merely to satisfy a number.
 
 ### Why this matters
 
@@ -392,7 +392,8 @@ AI outputs lists where items start with bolded headers followed by colons, then 
 
 ChatGPT uses curly/smart quotes (" " ' ') instead of straight quotes (" '). This is a subtle but detectable tell in contexts where straight quotes are standard.
 
-**Fix:** Search and replace all curly quotes with straight quotes.
+**Fix:** Match the medium and the user's confirmed preference. Plain text commonly uses straight quotes;
+typeset documents commonly use curly quotes. Never mix styles accidentally.
 
 ---
 

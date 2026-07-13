@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "humanise",
+  "owner": {
+    "name": "Nisus74"
+  },
+  "description": "Writing tools that remove generic AI patterns and learn the writer's own voice.",
+  "plugins": [
+    {
+      "name": "humanise",
+      "source": "./",
+      "description": "Rewrite and draft prose in a specific person's voice.",
+      "version": "0.2.0",
+      "category": "Productivity"
+    }
+  ]
+}

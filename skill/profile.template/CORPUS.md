@@ -1,10 +1,13 @@
 # Voice corpus
 
-Real samples of your writing, annotated so the skill learns what your voice actually sounds like. Without this, the skill only knows what to avoid; it doesn't know what to aim for. This is the single highest-leverage asset in your profile.
+Real samples of your writing, annotated so the skill learns the decisions behind your voice. One sample
+is enough to begin calibration. Several channels and edit pairs make the model reliable.
 
 ## What to add
 
-5 to 10 samples to start, more over time. Rough is fine; it's ground truth rather than a showcase. Prioritise the channels you write most and the ones most prone to sounding AI-generated (LinkedIn, blog, email, anything public).
+Start with one sample for the task in front of you. Grow towards 5 to 10 across the channels and
+relationships you use. Rough is fine; it is ground truth rather than a showcase. A proposed draft paired
+with your final edit is especially valuable.
 
 The fastest way to collect them is `scripts/corpus-questionnaire.md`: it walks you channel by channel with concrete fetch prompts and drafts the annotations by asking, so you correct rather than write from scratch.
 
@@ -16,4 +19,6 @@ The fingerprint (`voice-fingerprint.md`) is synthesised from these samples by `s
 
 ## Annotation
 
-Fill in every field of `SAMPLE_TEMPLATE.md`. The `what_worked` and `characteristic_of_you` fields matter most: name the specific moves ("opens on the ask, skipping the pleasantry"; "uses numbers instead of adjectives for size"), not generic praise ("clear communication"). If you catch yourself writing something that would fit any sample, force yourself to be specific.
+Fill in every field of `SAMPLE_TEMPLATE.md`. Name decisions rather than generic qualities: “states the
+miss before the recovery plan” is evidence; “clear communication” is not. Record assistance honestly so
+the fingerprint can downweight model-written or heavily polished samples.

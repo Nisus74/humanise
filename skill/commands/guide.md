@@ -1,9 +1,14 @@
-# /humanise guide
+# humanise: guide
 
-Guide mode. Draft new content in the user's voice from the start.
+Draft new content in the user's voice.
 
-1. Read `profile/soul.md`, `profile/voice-fingerprint.md`, and the nearest `profile/sample-*.md` samples; pick the channel playbook in `references/channel-playbooks.md`.
-2. Run the generation workflow in `SKILL.md`: name the point, ask for raw words on external pieces, draft from exemplars, two-pass sweep, self-critique, verify.
-3. Present with the compact evidence; ask what they'd change.
+1. Build the meaning contract and reader model in `references/meaning-and-voice.md`.
+2. Load the smallest drafting card described in `SKILL.md`.
+3. Classify the voice evidence as strong, moderate or thin.
+4. Draft through the content, rhetoric, voice and surface passes.
+5. Verify fidelity before voice and mechanics.
+6. Present the finished draft first. Mention only material assumptions, unsupported claims or evidence
+   gaps.
 
-Use before writing, when the user wants the draft to sound like them from the first line.
+Ask once for raw words when an external or consequential piece has no personal source material and
+that input would materially improve the result. Do not block a useful conservative draft.

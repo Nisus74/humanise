@@ -1,45 +1,83 @@
-# Setup: your first 15 minutes
+# Voice setup
 
-New to agent skills? Read [getting-started.md](getting-started.md) first; it covers install and your first command. This page is the profile deep-dive.
+Start with [Getting started](getting-started.md). This page explains how to turn a one-sample
+calibration into a reliable multi-channel profile.
 
-The goal is a working, personalised skill, fast. The corpus is the bottleneck for everyone, so the steps are ordered to get you drafting in your voice with the least friction.
+## The first three minutes
 
-## 1. Make your profile (1 min)
+Invoke humanise and ask it to initialise your voice. The agent will create `profile/` and `config.yml`
+inside the installed skill when they do not exist.
 
+Give it:
+
+1. One short piece you wrote and like.
+2. The reader and relationship.
+3. What you wanted the writing to achieve.
+4. Any part that feels particularly like you.
+
+Choose between the resulting rewrite directions and correct the closest one. The resulting voice
+decisions remain provisional until more evidence confirms them.
+
+## Build a useful profile
+
+Grow towards five to ten real samples across the channels you use. Prefer:
+
+- writing you actually sent or published;
+- raw or lightly edited work;
+- examples with different relationships and stakes;
+- the skill's draft paired with your final edit;
+- short negative examples with a precise reason you rejected them.
+
+Save samples as `profile/sample-<channel>-<slug>.md` using `profile/SAMPLE_TEMPLATE.md`. The guided
+questionnaire in `scripts/corpus-questionnaire.md` helps collect and annotate them.
+
+## Write the soul after seeing real choices
+
+`profile/soul.md` records what you believe about writing and what you will not trade away. Use claims
+specific enough that another writer might disagree:
+
+- "I never use a number I cannot source."
+- "I state bad news before the recovery plan."
+- "I challenge the decision while respecting the person."
+
+Avoid generic values such as clarity, authenticity and impact. They do not distinguish a voice.
+
+Keep `profile/absolute-rules.md` to explicit non-negotiables. Inferred habits belong in
+`profile/voice-decisions.md` until the evidence is strong.
+
+## Model relationships
+
+Channel alone is not enough. Use `profile/relationships.md` to record confirmed differences between
+writing to a trusted colleague, a customer with a problem, an investor, a regulator or a public
+audience. Do not create an overlay without direct evidence.
+
+## Generate the fingerprint
+
+After several useful samples, ask humanise to run `fingerprint`. It will synthesise:
+
+- what you choose to mention;
+- how you reach and express judgements;
+- how you handle readers and disagreement;
+- how you structure a case;
+- cadence, diction and punctuation;
+- channel and relationship gaps;
+- evidence and confidence for every pattern.
+
+Regenerate after roughly five useful additions or when a channel first gets direct coverage.
+
+## Configuration
+
+The canonical configuration is `config.yml` beside `SKILL.md`. Set your name, dialect, default
+register, profile directory and common channels there. Do not create a second configuration inside
+`profile/`.
+
+## Keep it private
+
+Run the installation diagnostic whenever the skill moves:
+
+```sh
+humanise doctor --provider=<name> [--project]
 ```
-cp -r profile.template profile     # blank
-# or
-cp -r profile.example profile      # start from a real example, then replace it
-```
 
-## 2. Write your soul and absolute rules (5 min)
-
-Open `profile/soul.md` and write your convictions: concrete, first-person, no vibes. `profile.example/soul.md` is the bar. Then set `profile/identity.md` (name, dialect, role) and `profile/absolute-rules.md` (your 3 to 6 non-negotiables).
-
-This alone gets you usable output with a point of view, before any samples.
-
-## 3. Add samples and generate your fingerprint (8 min)
-
-Drop 5 to 10 real samples into `profile/` as flat `sample-<channel>-<slug>.md` files (one each, per `SAMPLE_TEMPLATE.md`). Then run `scripts/generate-fingerprint.md` with Claude pointed at the corpus, and paste the result into `profile/voice-fingerprint.md`.
-
-More samples, better voice. LinkedIn and blog first; they're the most AI-prone.
-
-## 4. Set config (1 min)
-
-```
-cp config.example.yml config.yml
-```
-
-Set `name`, `dialect`, `default_register`, and `channels`.
-
-## 5. Check the engine
-
-```
-cd evals/assertions && python3 selftest.py
-```
-
-Green means the checker works. Now ask Claude to write something with the skill active, and run `writing_checks.py` on the draft.
-
-## Keeping it sharp
-
-As you accept and reject the skill's output, log the patterns per `references/memory-loop.md`, and promote the confirmed ones into the fingerprint through the gate in `evals/self-harness-loop.md`. Regenerate the fingerprint when the corpus grows.
+For a project install, confirm the profile does not appear in `git status` and is not returned by
+`git ls-files`. Redact samples before saving them.

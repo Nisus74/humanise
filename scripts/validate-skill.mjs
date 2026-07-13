@@ -135,8 +135,7 @@ function main() {
     for (const w of warn) console.log("  ! " + w);
   }
   // Validate the Claude Code plugin artifact: a valid plugin root has the manifest
-  // under .claude-plugin/ and the skill auto-discovered at skills/<name>/SKILL.md.
-  // A stale `skills` path (the old "../skill") breaks install, so flag it here.
+  // under .claude-plugin/ and the skill under skills/<name>/SKILL.md.
   const pluginManifest = join(DIST, "claude-code", ".claude-plugin", "plugin.json");
   const pluginSkill = join(DIST, "claude-code", "skills", "humanise", "SKILL.md");
   const pErrs = [];
@@ -154,7 +153,7 @@ function main() {
       else if (!NAME_RE.test(pm.name)) pErrs.push(`plugin name "${pm.name}" must be lowercase alphanumeric with single hyphens`);
       if (!pm.version) pErrs.push("plugin.json missing `version`");
       if (pm.description && /[<>]/.test(pm.description)) pErrs.push("plugin.json description must not contain angle brackets");
-      if (pm.skills) pErrs.push("plugin.json should not declare a `skills` path; skills auto-discover from skills/<name>/, and a stale path breaks install");
+      if (pm.skills !== "./skills/") pErrs.push("plugin.json `skills` must point to ./skills/ in the built plugin");
     }
   }
   if (!existsSync(pluginSkill)) {

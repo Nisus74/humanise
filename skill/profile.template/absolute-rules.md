@@ -1,12 +1,14 @@
 # Absolute rules: <your name>
 
-A handful of voice rules that override everything else in your fingerprint. Keep this to 3 to 6. The sweep and the drafting step treat these as non-negotiable.
+A handful of explicit personal rules that override the fingerprint. Keep this to 3 to 6. Leave the
+file sparse until the writer confirms a rule; engine defaults do not become personal absolutes.
 
 Replace the placeholders with yours:
 
-1. Zero em dashes, zero curly quotes. (Near-universal AI tells; keep this one.)
-2. <A dialect rule, e.g. "AusE spelling visible in anything over a paragraph".>
-3. <An opener rule, e.g. "Never open a formal piece on 'I'".>
-4. <A structural rule, e.g. "At most one load-bearing binary contrast per piece".>
+1. <An explicit punctuation or formatting rule the writer has confirmed.>
+2. <A dialect rule, if the writer has one.>
+3. <An opener or closer rule tied to a named channel.>
+4. <A factual or ethical line the writer will not cross.>
 
-Fewer, firmer rules beat a long list. If everything is absolute, nothing is.
+Fewer, firmer rules beat a long list. A preference inferred from one sample belongs in
+`voice-decisions.md`, not here.

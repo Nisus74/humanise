@@ -1,12 +1,15 @@
 # Corpus questionnaire: pull your samples fast
 
-The corpus is the most valuable asset in your profile (see `profile/CORPUS.md`), and also the most likely thing to stall onboarding: hunting for old writing and annotating it cold is slow. This questionnaire makes it fast. Run it with Claude (or any capable model); it pulls 5 to 10 real samples and fills the annotations by asking, instead of leaving you a blank template.
+The corpus is valuable and easy to turn into homework. Start with one sample related to the current
+task. Use this questionnaire later to deepen the channels that matter.
 
 It pairs with `generate-fingerprint.md`: this collects the samples, that turns them into your fingerprint.
 
 ## How to run it
 
-Work one channel at a time. For each, the model gives you a concrete fetch prompt, you paste what you have, and the model drafts the `SAMPLE_TEMPLATE.md` annotations for you to correct. Stop when you have 5 to 10 across at least three channels.
+Work one channel at a time. The model gives a concrete fetch prompt, the user pastes what they have,
+and the model drafts the annotation for correction. Stop after one when onboarding. Continue towards
+5 to 10 only when the user wants deeper coverage.
 
 ## The fetch prompts (concrete beats "share some writing")
 
@@ -22,11 +25,13 @@ Aim for spread across channels: a few covered beats ten LinkedIn posts. Rough is
 
 ## Extract the annotations by asking (don't leave them blank)
 
-The `what_worked` and `characteristic_of_you` fields are where most corpora go generic. Don't make the writer fill them cold. For each pasted sample, the model asks two or three targeted questions and drafts the annotation from the answers:
+Do not make the writer fill annotations cold. Ask two or three targeted questions:
 
 - "What were you trying to do here, in one line?" feeds `context`.
 - "What about this one lands for you? What would you have hated to see written the bland way?" feeds `what_worked`.
-- "Is there a move in here you make that others don't: how you open, where the opinion sits, how you stop?" feeds `characteristic_of_you`. If the answer is generic ("clear and direct"), push once: "Clear how? Point to the sentence."
+- "What decision in here feels like yours: what you included, judged, put first or left out?" feeds
+  `characteristic_of_you`. If the answer is generic, push once: "Point to the sentence and name the choice."
+- "How much help did this receive before it was sent?" feeds `assistance_status`.
 
 The model then writes the sample to `profile/sample-<channel>-<short-description>.md` using `SAMPLE_TEMPLATE.md`, annotations filled from the answers. You correct anything that doesn't ring true.
 
@@ -39,4 +44,4 @@ Run `scripts/generate-fingerprint.md` to synthesise `profile/voice-fingerprint.m
 - Real over representative. The sample you actually sent beats the one you'd write for show.
 - Specific over generic. "Opens on the number, not the story" beats "data-driven". If an annotation would fit any sample, it's too vague.
 - Spread over volume. Five channels lightly covered beats one channel ten times.
-- Don't block on perfection. Five rough, well-annotated samples is a working profile; you add more over time.
+- Don't block on volume. One real sample plus the user's correction is a working start.

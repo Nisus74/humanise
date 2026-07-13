@@ -2,16 +2,20 @@
 
 The rest of this skill is mostly negative: what to avoid, what to cut, what flags as AI. This file is the opposite. These are the moves that characterise good writing: the specific habits that signal a particular human wrote something, not a language model.
 
-Aim to hit two or three of these patterns in any piece longer than a paragraph. One positive move makes writing feel competent; three or four make it feel alive.
+Use these patterns to diagnose anonymous writing, not as features to install. A draft may need none of
+them. Adding two or three on purpose can create a new template that performs humanity instead of
+expressing a real decision.
 
-**How to use a move.** Each move is a thing to *do*, paired with a self-check question: what the read-aloud pass in `SKILL.md` Step 5 asks to decide whether the draft needs it. Four families map to an advisory signal in `writing_checks.py`, the script's way of pointing you back here:
+**How to use a move.** Each move is paired with a self-check question. Use it only when the content,
+reader and direct voice evidence support it. Four families map to advisory signals in the checker:
 
 - specificity moves map to `specificity_density`
 - opinion moves map to `stance_signal`
 - story-before-lesson maps to `generic_to_specific`
 - plain verbs over fancy copulas map to `copula_ratio`
 
-These signals flag where a draft *looks* thin; they never fail it (they ride the advisory rail, so there is no number to game). The self-check is how you decide whether texture is genuinely missing or fine for this piece. The rest of the moves are a manual menu: pick two or three on purpose, never all of them, or the moves become their own tic.
+These signals flag where a draft may be thin; they never fail it. The self-check decides whether a
+human judgement is genuinely missing or whether the piece is appropriately short, neutral or formal.
 
 ---
 
@@ -193,7 +197,8 @@ In writing for pathology or healthcare audiences, the user treats compliance as 
 
 ## Using this file
 
-When drafting, pick two or three positive patterns to deliberately use. The mechanical sweep is about removing bad patterns; this is about installing good ones.
+When a draft feels anonymous, use this file to name the missing decision. Do not add a move solely
+because it is listed here.
 
 Over time, the patterns specific to the user (the last section above) get more weight as the voice corpus fleshes out their actual habits. A generic "specific numbers beat adjectives" is universally true. A specific "the user opens investor updates with the biggest number from the quarter" is the user's move.
 

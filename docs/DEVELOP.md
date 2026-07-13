@@ -4,7 +4,8 @@
 
 - `skill/`: the source skill. This is what ships. The folder is named `skill/` in the repo but builds and installs as `humanise/` (matching the `name` in SKILL.md), so the shipped skill satisfies the spec's name-matches-directory rule. Validate the built artifact rather than the source.
 - `cli/`: the Node CLI (`bin/cli.js`) and the provider map (`providers.mjs`).
-- `scripts/build.mjs`: compiles `skill/` into `dist/<provider>/<path>` for each target agent.
+- `scripts/build.mjs`: compiles `skill/` into the portable `dist/humanise` artefact and the Claude
+  plugin layout.
 - `dist/`: generated build output (gitignored; built on demand and at publish).
 
 ## Build
@@ -13,7 +14,9 @@
 npm run build        # or: node scripts/build.mjs
 ```
 
-Emits a `dist/<provider>/` for every supported agent (claude-code, cursor, gemini, codex, github, opencode, universal). To add a provider: add a row to `cli/providers.mjs` (`PROVIDERS` path and a `DETECT` marker), then rebuild. The build is a copy with per-provider placement; the Python checker travels as-is, nothing is transpiled.
+Emits one `dist/humanise` artefact for every direct skill install. To add a provider, define its
+separate project and personal paths, discovery markers and invocation text in `cli/providers.mjs`.
+The installer applies the destination path, so identical provider copies do not inflate the package.
 
 ## Validate
 
@@ -27,7 +30,17 @@ Run after `npm run build`. For each built `humanise/` it enforces the spec's har
 - the `name` is lowercase-hyphenated and matches its directory,
 - the `description` stays within 1024 characters.
 
-Advisory warnings (which never fail the run) fire when SKILL.md goes over the ~5,000-token or 500-line progressive-disclosure budget, or when a folder sits more than one level deep. It checks the built artifact under `dist/`; running `skills-ref validate ./skill` on the source would flag that the folder is `skill/` rather than `humanise/`. `prepack` runs build then validate, so a publish can't ship a spec regression. Zero dependencies (Node built-ins), like `check:deps`.
+Advisory warnings (which never fail the run) fire when SKILL.md goes over the ~5,000-token or 500-line progressive-disclosure budget, or when a folder sits more than one level deep. It checks the built artifact under `dist/`; running `skills-ref validate ./skill` on the source would flag that the folder is `skill/` rather than `humanise/`. `prepack` runs the build, validation and package privacy check. Zero dependencies (Node built-ins), like `check:deps`.
+
+## Package privacy
+
+```sh
+npm run check:package-privacy
+```
+
+The release fails if the npm whitelist includes the source `skill/` tree or a built artefact contains a
+filled profile, `config.yml`, bytecode or a cache directory. The package ships sanitised `dist/`
+artefacts only.
 
 ## Test
 
@@ -48,24 +61,29 @@ The subagents this loop spawns (the generator, the blind judge, the proposer) ar
 ## CLI
 
 ```
-npx humanise install [--provider=<name>] [--global]
+npx humanise install --provider=<name> [--global|--project]
+npx humanise doctor --provider=<name> [--global|--project]
 npx humanise detect <file> [dialect] [medium]
 npx humanise voiceprint <file>          # score a draft against your voice; --build builds the baseline
 npx humanise voiceprint --status        # per-channel corpus counts, pairwise-test eligibility, baseline freshness
-npx humanise init
+npx humanise init [--provider=<name>] [--global|--project]
 npx humanise build
 ```
 
-`install` auto-detects the agent from marker dirs (`.claude`, `.cursor`, `.gemini`, `.agents`, `.github`, `.opencode`); `--provider` overrides, `--global` installs into your home directory.
+User scope is the default. Auto-detection succeeds only when exactly one reliable agent marker exists;
+the installer refuses to guess when several are present. `.github` alone is not treated as evidence
+that the user runs Copilot. Project installs protect private profile paths in Git's local exclude file.
 
 ## Set up a profile from a clone
 
 If you have cloned this repo and want to work on a profile in place (rather than installing the skill into another project via `npx humanise install`), build one under `skill/profile/`:
 
 1. `cp -r skill/profile.template skill/profile` (or `skill/profile.example` to start from a real example).
-2. Write `skill/profile/soul.md`: your convictions about writing. Concrete, first-person; `skill/profile.example/soul.md` shows the bar.
-3. Drop 5 to 10 real writing samples into `skill/profile/` as flat `sample-<channel>-<slug>.md` files, then run `skill/scripts/generate-fingerprint.md` to build your fingerprint (it also builds the voiceprint baseline).
-4. `cp skill/config.example.yml skill/config.yml` and set your name, dialect and channels.
+2. Copy `skill/config.example.yml` to `skill/config.yml`.
+3. Start with one real sample and a contrastive calibration. Add `soul.md` after the user's decisions
+   are concrete enough to record.
+4. Grow towards 5 to 10 samples across active channels, including negative examples and draft-to-final
+   edit pairs, then generate the fingerprint.
 5. Check the engine: `cd skill/evals/assertions && python3 selftest.py`.
 
 `skill/profile/` is gitignored and never committed. Full walkthrough in [SETUP.md](SETUP.md).

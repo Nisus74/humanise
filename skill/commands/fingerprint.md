@@ -1,7 +1,12 @@
-# /humanise fingerprint
+# humanise: fingerprint
 
 (Re)generate the user's voice fingerprint from their corpus. Run after adding `profile/sample-*.md` samples.
 
-Follow `scripts/generate-fingerprint.md`: read every sample, extract descriptors with evidence, measure the tripwires, write `profile/voice-fingerprint.md`, and note the gaps (channels with no samples). The same step also builds the voiceprint baseline (`humanise voiceprint --build`, or `scripts/build_voiceprint.py`), the machine-readable twin used to flag drafts that drift from your voice. Promotion of newly confirmed patterns goes through the gate in `evals/self-harness-loop.md`.
+Follow `scripts/generate-fingerprint.md`: read every raw sample, the negative examples and the user's
+recorded edits. Extract decisions before surface habits. Label each pattern confirmed, supported or
+provisional, cite its evidence, write `profile/voice-fingerprint.md`, and name the channel and
+relationship gaps. The same step may rebuild the advisory voiceprint baseline.
 
-More samples, better voice. The fingerprint is the highest-leverage thing the user can refresh; everything else is rules. Regenerate it (and rebuild the voiceprint) after roughly every five new samples, or whenever a channel first gets real coverage.
+Direct draft-to-final edit pairs are stronger than another polished sample. Regenerate after roughly
+five useful additions or when a channel first gains direct coverage. Never turn one occurrence into a
+personal rule.

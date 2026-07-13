@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // humanise CLI. No dependencies; Node built-ins only.
-//   humanise install [--provider=<name>] [--global]   install the skill into your AI tool
+//   humanise install --provider=<name> [--global|--project]  install the skill
+//   humanise doctor --provider=<name> [--global|--project]   verify discovery and privacy
 //   humanise detect <file> [dialect] [medium]          run the deterministic checker (Python)
 //   humanise voiceprint <file> | --build               score/build voice distance (Python)
 //   humanise init                                      scaffold a voice profile
@@ -11,22 +12,47 @@ import {
   cpSync,
   readFileSync,
   readdirSync,
+  appendFileSync,
 } from "node:fs";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 import { homedir } from "node:os";
-import { PROVIDERS, DETECT } from "../providers.mjs";
+import { PROVIDERS, detectProviders } from "../providers.mjs";
 
 const PKG_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const DIST = join(PKG_ROOT, "dist");
-const SKILL = join(PKG_ROOT, "skill");
+const SOURCE_SKILL = join(PKG_ROOT, "skill");
+const SKILL = existsSync(SOURCE_SKILL) ? SOURCE_SKILL : join(DIST, "humanise");
 
-function detectProvider(cwd) {
-  for (const [marker, provider] of Object.entries(DETECT)) {
-    if (existsSync(join(cwd, marker))) return provider;
+function providerNames() {
+  return Object.keys(PROVIDERS);
+}
+
+function providerPath(provider, scope) {
+  const config = PROVIDERS[provider];
+  return scope === "global" ? config.globalPath : config.projectPath;
+}
+
+function parseScope(args, fallback = "global") {
+  if (args.includes("--project") || args.includes("--scope=project")) return "project";
+  if (args.includes("--global") || args.includes("-g") || args.includes("--scope=user")) return "global";
+  return fallback;
+}
+
+function resolveProvider(args, cwd) {
+  const explicit = (args.find((a) => a.startsWith("--provider=")) || "").split("=")[1];
+  if (explicit) return explicit;
+  const candidates = detectProviders(cwd, (base, marker) => existsSync(join(base, marker)));
+  if (candidates.length === 1) return candidates[0];
+  if (candidates.length > 1) {
+    console.error(`More than one supported agent was detected: ${candidates.join(", ")}.`);
+    console.error("Choose one with --provider=<name>, or install each one separately.");
+    process.exit(1);
   }
-  return null;
+  console.error("No supported agent could be detected from this directory.");
+  console.error(`Choose one with --provider=<name>. Options: ${providerNames().join(", ")}`);
+  process.exit(1);
 }
 
 function ensureBuilt() {
@@ -35,6 +61,25 @@ function ensureBuilt() {
       stdio: "inherit",
     });
   }
+}
+
+function protectProjectProfile(cwd, rel) {
+  const probe = spawnSync("git", ["rev-parse", "--git-path", "info/exclude"], {
+    cwd,
+    encoding: "utf8",
+  });
+  if (probe.status !== 0) return null;
+  const raw = probe.stdout.trim();
+  if (!raw) return null;
+  const exclude = resolve(cwd, raw);
+  mkdirSync(dirname(exclude), { recursive: true });
+  const existing = existsSync(exclude) ? readFileSync(exclude, "utf8") : "";
+  const entries = [`/${rel}/profile/`, `/${rel}/config.yml`];
+  const missing = entries.filter((entry) => !existing.split(/\r?\n/).includes(entry));
+  if (missing.length) {
+    appendFileSync(exclude, `${existing && !existing.endsWith("\n") ? "\n" : ""}# humanise private voice profile\n${missing.join("\n")}\n`);
+  }
+  return exclude;
 }
 
 function ensurePython() {
@@ -50,26 +95,30 @@ function ensurePython() {
 }
 
 function install(args) {
-  const flagProvider = (args.find((a) => a.startsWith("--provider=")) || "").split("=")[1];
-  const global = args.includes("--global") || args.includes("-g");
   const cwd = process.cwd();
-  const provider = flagProvider || detectProvider(cwd) || "universal";
+  const provider = resolveProvider(args, cwd);
+  const scope = parseScope(args);
   if (!PROVIDERS[provider]) {
-    console.error(`Unknown provider "${provider}". Options: ${Object.keys(PROVIDERS).join(", ")}`);
+    console.error(`Unknown provider "${provider}". Options: ${providerNames().join(", ")}`);
     process.exit(1);
   }
   ensureBuilt();
-  const rel = PROVIDERS[provider];
-  const src = join(DIST, provider, rel);
+  const rel = providerPath(provider, scope);
+  const src = join(DIST, "humanise");
   if (!existsSync(src)) {
-    console.error(`No build for "${provider}". Run "humanise build" first.`);
+    spawnSync(process.execPath, [join(PKG_ROOT, "scripts", "build.mjs")], { stdio: "inherit" });
+  }
+  if (!existsSync(src)) {
+    console.error(`Could not build the install artifact for "${provider}".`);
     process.exit(1);
   }
-  const dest = global ? join(homedir(), rel) : join(cwd, rel);
+  const dest = scope === "global" ? join(homedir(), rel) : join(cwd, rel);
   mkdirSync(dirname(dest), { recursive: true });
   cpSync(src, dest, { recursive: true });
-  console.log(`Installed humanise (${provider}) -> ${dest}`);
-  console.log(`Next: run "/humanise init" inside your tool to set up your voice profile.`);
+  const exclude = scope === "project" ? protectProjectProfile(cwd, rel) : null;
+  console.log(`Installed humanise for ${provider} (${scope}) -> ${dest}`);
+  if (exclude) console.log(`Protected the private profile locally in ${exclude}`);
+  console.log(`Next in ${provider}: ${PROVIDERS[provider].invoke}. Ask it to set up humanise.`);
 }
 
 function detect(args) {
@@ -91,19 +140,43 @@ function detect(args) {
   process.exit(r.status ?? 0);
 }
 
-function profileBase() {
+function profileBase(args = []) {
   const cwd = process.cwd();
-  for (const rel of Object.values(PROVIDERS)) {
-    if (existsSync(join(cwd, rel, "profile")) || existsSync(join(cwd, rel, "profile.template"))) {
-      return join(cwd, rel);
+  const explicit = (args.find((a) => a.startsWith("--provider=")) || "").split("=")[1];
+  if (explicit) {
+    if (!PROVIDERS[explicit]) {
+      console.error(`Unknown provider "${explicit}". Options: ${providerNames().join(", ")}`);
+      process.exit(1);
     }
+    const scope = parseScope(args);
+    const root = scope === "global" ? homedir() : cwd;
+    return join(root, providerPath(explicit, scope));
+  }
+  const roots = [cwd, homedir()];
+  const matches = [];
+  for (const root of roots) {
+    for (const config of Object.values(PROVIDERS)) {
+      for (const rel of new Set([config.projectPath, config.globalPath])) {
+        if (existsSync(join(root, rel, "profile")) || existsSync(join(root, rel, "profile.template"))) {
+          matches.push(join(root, rel));
+        }
+      }
+    }
+  }
+  const unique = [...new Set(matches)];
+  if (unique.length === 1) return unique[0];
+  if (unique.length > 1) {
+    console.error("More than one humanise installation was found:");
+    for (const match of unique) console.error(`  ${match}`);
+    console.error("Choose one with --provider=<name> and --global or --project.");
+    process.exit(1);
   }
   return SKILL;
 }
 
 function voiceprint(args) {
   const script = join(SKILL, "scripts", "build_voiceprint.py");
-  const base = profileBase();
+  const base = profileBase(args);
   const baseline =
     (args.find((a) => a.startsWith("--baseline=")) || "").split("=")[1] ||
     join(base, "profile", "voiceprint.json");
@@ -161,16 +234,8 @@ function voiceprint(args) {
   process.exit(r.status ?? 0);
 }
 
-function init() {
-  const cwd = process.cwd();
-  let base = null;
-  for (const rel of Object.values(PROVIDERS)) {
-    if (existsSync(join(cwd, rel, "profile.template"))) {
-      base = join(cwd, rel);
-      break;
-    }
-  }
-  base = base || SKILL;
+function init(args) {
+  const base = profileBase(args);
   const tpl = join(base, "profile.template");
   const dest = join(base, "profile");
   if (existsSync(dest)) {
@@ -182,14 +247,53 @@ function init() {
     process.exit(1);
   }
   cpSync(tpl, dest, { recursive: true });
+  const config = join(base, "config.yml");
+  if (!existsSync(config) && existsSync(join(base, "config.example.yml"))) {
+    cpSync(join(base, "config.example.yml"), config);
+  }
   console.log(`Created ${dest} from profile.template.`);
-  console.log("Next:");
-  console.log("  1. Write profile/soul.md (see profile.example/soul.md for the bar).");
-  console.log("  2. Collect 5-10 samples fast with scripts/corpus-questionnaire.md (flat in profile/ as sample-<channel>-*.md).");
-  console.log("  3. Generate your fingerprint with scripts/generate-fingerprint.md (also builds the voiceprint).");
+  console.log(`Created ${config}.`);
+  console.log("Next: open your agent, invoke humanise, and ask for the three-minute voice setup.");
+  console.log("One real writing sample is enough to start. Add more channels when the first result is useful.");
+}
+
+function doctor(args) {
+  const cwd = process.cwd();
+  const provider = resolveProvider(args, cwd);
+  const scope = parseScope(args);
+  const rel = providerPath(provider, scope);
+  const base = scope === "global" ? join(homedir(), rel) : join(cwd, rel);
+  let failed = false;
+  const checks = [
+    ["skill", join(base, "SKILL.md")],
+    ["profile template", join(base, "profile.template")],
+    ["configuration template", join(base, "config.example.yml")],
+  ];
+  for (const [label, path] of checks) {
+    const ok = existsSync(path);
+    console.log(`${ok ? "OK" : "MISSING"}  ${label}: ${path}`);
+    if (!ok) failed = true;
+  }
+  const profile = join(base, "profile");
+  console.log(`${existsSync(profile) ? "OK" : "NOT SET UP"}  private profile: ${profile}`);
+  if (scope === "project" && existsSync(profile)) {
+    const tracked = spawnSync("git", ["ls-files", "--error-unmatch", profile], { cwd, encoding: "utf8" });
+    if (tracked.status === 0) {
+      console.log("UNSAFE  the private profile is tracked by Git");
+      failed = true;
+    } else {
+      console.log("OK  the private profile is not tracked by Git");
+    }
+  }
+  console.log(`Invoke in ${provider}: ${PROVIDERS[provider].invoke}`);
+  process.exit(failed ? 1 : 0);
 }
 
 function build() {
+  if (!existsSync(SOURCE_SKILL)) {
+    console.error("The build command is available only in a source checkout. Published packages already contain built artefacts.");
+    process.exit(1);
+  }
   spawnSync(process.execPath, [join(PKG_ROOT, "scripts", "build.mjs")], { stdio: "inherit" });
 }
 
@@ -202,18 +306,22 @@ function help() {
   console.log(`humanise - make AI writing sound human (body + soul)
 
 Usage:
-  npx humanise install [--provider=<name>] [--global]   install the skill into your AI tool
+  npx humanise install --provider=<name> [--global|--project]
+                                                      install the skill (user scope is default)
+  npx humanise doctor --provider=<name> [--global|--project]
+                                                      verify discovery, profile and privacy
   npx humanise detect <file> [dialect] [medium]         run the deterministic checker (no LLM)
   npx humanise voiceprint <file>                        score a draft's distance from your voice (advisory)
   npx humanise voiceprint --build                       build the baseline from profile/ samples
   npx humanise voiceprint --status [--json]             corpus and voiceprint state per channel
-  npx humanise init                                     scaffold your voice profile
+  npx humanise init [--provider=<name>] [--global|--project]
+                                                      scaffold your voice profile
   npx humanise build                                    rebuild dist/ from skill/
   npx humanise version
 
 Providers: ${Object.keys(PROVIDERS).join(", ")}
-Install auto-detects your harness (looks for .claude, .cursor, .gemini, .agents, ...).
-After installing, run "/humanise init" inside your tool.`);
+Install auto-detects only when exactly one supported harness marker is present.
+After installing, invoke the skill in your tool and ask to set up humanise.`);
 }
 
 const [cmd, ...args] = process.argv.slice(2);
@@ -229,7 +337,10 @@ switch (cmd) {
     voiceprint(args);
     break;
   case "init":
-    init();
+    init(args);
+    break;
+  case "doctor":
+    doctor(args);
     break;
   case "build":
     build();

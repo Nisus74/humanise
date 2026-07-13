@@ -1,11 +1,10 @@
 #!/usr/bin/env node
-// Compile the single source skill (skill/) into a per-provider build under dist/.
-// Each provider gets the same portable skill, placed at the path that harness expects.
+// Compile the source skill into one portable artifact. Provider destinations live
+// in cli/providers.mjs and are applied only when a user installs it.
 // The Python checker travels as-is; nothing is transpiled.
 import { cpSync, mkdirSync, rmSync, readFileSync, writeFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { PROVIDERS } from "../cli/providers.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const SRC = join(ROOT, "skill");
@@ -35,6 +34,7 @@ function writePlugin() {
     readFileSync(join(ROOT, ".claude-plugin", "plugin.json"), "utf8"),
   );
   manifest.version = pkg.version;
+  manifest.skills = "./skills/";
   const pluginRoot = join(DIST, "claude-code");
   const manifestDst = join(pluginRoot, ".claude-plugin", "plugin.json");
   mkdirSync(dirname(manifestDst), { recursive: true });
@@ -47,19 +47,13 @@ function writePlugin() {
 
 function build() {
   rmSync(DIST, { recursive: true, force: true });
-  for (const [provider, rel] of Object.entries(PROVIDERS)) {
-    const dest = join(DIST, provider, rel);
-    mkdirSync(dirname(dest), { recursive: true });
-    cpSync(SRC, dest, { recursive: true, filter: skip });
-    writeFileSync(join(dest, ".humanise-version"), STAMP);
-  }
+  const dest = join(DIST, "humanise");
+  mkdirSync(dirname(dest), { recursive: true });
+  cpSync(SRC, dest, { recursive: true, filter: skip });
+  writeFileSync(join(dest, ".humanise-version"), STAMP);
   // Claude Code also gets the plugin layout (manifest + auto-discovered skill).
   writePlugin();
-  console.log(
-    "Built dist/ for: " +
-      Object.keys(PROVIDERS).join(", ") +
-      " (+ claude-code plugin layout)",
-  );
+  console.log("Built dist/humanise (+ Claude Code plugin layout)");
 }
 
 build();

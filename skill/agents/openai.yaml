@@ -1,0 +1,6 @@
+interface:
+  display_name: "Humanise"
+  short_description: "Write in a specific person's real voice"
+  default_prompt: "Use $humanise to rewrite this in my voice without changing what I mean."
+policy:
+  allow_implicit_invocation: true

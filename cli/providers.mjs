@@ -1,23 +1,57 @@
-// Single source of truth: which harnesses humanise supports, and where the skill
-// folder lands inside a project for each. The build emits dist/<provider>/<path>;
-// `humanise install` copies that into the user's project (or ~/ for a global install).
+// One source of truth for provider discovery, installation paths and the
+// invocation users see after install. Project and user paths differ on some
+// hosts, so never derive one from the other.
 export const PROVIDERS = {
-  "claude-code": ".claude/skills/humanise",
-  cursor: ".cursor/skills/humanise",
-  gemini: ".gemini/skills/humanise",
-  codex: ".agents/skills/humanise",
-  github: ".github/skills/humanise",
-  opencode: ".opencode/skills/humanise",
-  universal: "humanise",
+  "claude-code": {
+    projectPath: ".claude/skills/humanise",
+    globalPath: ".claude/skills/humanise",
+    markers: [".claude"],
+    invoke: "/humanise",
+  },
+  cursor: {
+    projectPath: ".cursor/skills/humanise",
+    globalPath: ".cursor/skills/humanise",
+    markers: [".cursor"],
+    invoke: "/humanise",
+  },
+  gemini: {
+    projectPath: ".gemini/skills/humanise",
+    globalPath: ".gemini/skills/humanise",
+    markers: [".gemini"],
+    invoke: "/skills enable humanise, then ask normally",
+  },
+  codex: {
+    projectPath: ".agents/skills/humanise",
+    globalPath: ".agents/skills/humanise",
+    markers: [".agents", ".codex"],
+    invoke: "$humanise",
+  },
+  github: {
+    projectPath: ".github/skills/humanise",
+    globalPath: ".copilot/skills/humanise",
+    // .github is deliberately not a marker. Almost every GitHub repository has
+    // one, whether or not the user runs Copilot.
+    markers: [],
+    invoke: "/humanise",
+  },
+  opencode: {
+    projectPath: ".opencode/skills/humanise",
+    globalPath: ".config/opencode/skills/humanise",
+    markers: [".opencode"],
+    invoke: "ask normally or load the humanise skill",
+  },
+  universal: {
+    projectPath: "humanise",
+    globalPath: ".agents/skills/humanise",
+    markers: [],
+    invoke: "ask your agent to use the humanise skill",
+  },
 };
 
-// Heuristic harness detection: which marker dirs in the project root imply which provider.
-export const DETECT = {
-  ".claude": "claude-code",
-  ".cursor": "cursor",
-  ".gemini": "gemini",
-  ".agents": "codex",
-  ".codex": "codex",
-  ".opencode": "opencode",
-  ".github": "github",
-};
+export function detectProviders(cwd, exists) {
+  const found = [];
+  for (const [provider, config] of Object.entries(PROVIDERS)) {
+    if (config.markers.some((marker) => exists(cwd, marker))) found.push(provider);
+  }
+  return [...new Set(found)];
+}

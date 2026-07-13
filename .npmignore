@@ -1,0 +1,8 @@
+# Defence in depth for future package changes. The package ships sanitised dist/
+# artefacts, never the source profile or generated local state.
+skill/profile/
+skill/config.yml
+**/__pycache__/
+**/*.pyc
+.codex/
+.claude/settings.local.json

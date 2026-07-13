@@ -1,6 +1,6 @@
 {
   "name": "humanise",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Make AI-generated writing sound like a specific human wrote it. A shared anti-slop engine plus your own voice profile (body and soul). Cross-platform skill and CLI.",
   "author": "Nisus74",
   "license": "MIT",
@@ -31,15 +31,16 @@
   "files": [
     "cli/",
     "scripts/",
-    "skill/",
     "dist/",
+    ".claude-plugin/",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
     "build": "node scripts/build.mjs",
     "validate": "node scripts/validate-skill.mjs",
-    "prepack": "node scripts/build.mjs && node scripts/validate-skill.mjs",
+    "check:package-privacy": "node scripts/check-package-privacy.mjs",
+    "prepack": "node scripts/build.mjs && node scripts/validate-skill.mjs && node scripts/check-package-privacy.mjs",
     "test": "cd skill/evals/assertions && python3 selftest.py",
     "check:deps": "node scripts/check-no-deps.mjs"
   }
