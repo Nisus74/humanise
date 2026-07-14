@@ -1,7 +1,8 @@
-// One source of truth for provider discovery, installation paths and the
-// invocation users see after install. Project and user paths differ on some
-// hosts, so never derive one from the other.
-export const PROVIDERS = {
+import test from "node:test";
+import assert from "node:assert/strict";
+import { PROVIDERS, detectProviders } from "../cli/providers.mjs";
+
+const EXPECTED = {
   "claude-code": {
     projectPath: ".claude/skills/humanise",
     globalPath: ".claude/skills/humanise",
@@ -29,8 +30,6 @@ export const PROVIDERS = {
   github: {
     projectPath: ".github/skills/humanise",
     globalPath: ".copilot/skills/humanise",
-    // .github is deliberately not a marker. Almost every GitHub repository has
-    // one, whether or not the user runs Copilot.
     markers: [],
     invoke: "/humanise",
   },
@@ -43,8 +42,6 @@ export const PROVIDERS = {
   antigravity: {
     projectPath: ".agents/skills/humanise",
     globalPath: ".gemini/config/skills/humanise",
-    // Antigravity shares .agents with Codex and .gemini with Gemini CLI.
-    // Require an explicit provider instead of guessing the host.
     markers: [],
     invoke: "mention humanise by name",
   },
@@ -56,10 +53,21 @@ export const PROVIDERS = {
   },
 };
 
-export function detectProviders(cwd, exists) {
-  const found = [];
-  for (const [provider, config] of Object.entries(PROVIDERS)) {
-    if (config.markers.some((marker) => exists(cwd, marker))) found.push(provider);
+test("provider metadata matches current host paths", () => {
+  assert.deepEqual(PROVIDERS, EXPECTED);
+});
+
+test("Antigravity is never inferred from shared markers", () => {
+  const present = new Set([".agents", ".gemini"]);
+  const detected = detectProviders("/repo", (_cwd, marker) => present.has(marker));
+  assert.deepEqual(new Set(detected), new Set(["gemini", "codex"]));
+  assert.equal(detected.includes("antigravity"), false);
+});
+
+test("providers without reliable markers require an explicit flag", () => {
+  const detected = detectProviders("/repo", () => false);
+  assert.deepEqual(detected, []);
+  for (const provider of ["github", "antigravity", "universal"]) {
+    assert.deepEqual(PROVIDERS[provider].markers, []);
   }
-  return [...new Set(found)];
-}
+});
