@@ -57,6 +57,10 @@ test("released commands are pinned and Antigravity uses the supported 1.0.0 fall
   assert.match(docs, /\.gemini\/config\/skills\/humanise/);
   assert.doesNotMatch(docs, /humanise@1\.0\.0 install --provider=antigravity/);
   assert.doesNotMatch(docs, /gh skill install Nisus74\/humanise skill\/SKILL\.md/);
+  assert.match(
+    PLATFORMS,
+    /native `gh skill install` command is available.*installs this release as `skill`.*canonical `humanise` directory/s,
+  );
 });
 
 test("npm README links resolve outside the repository", () => {

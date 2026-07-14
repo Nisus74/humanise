@@ -97,6 +97,11 @@ npx humanise@1.0.0 doctor --provider=github
 The Humanise installer uses `.github/skills` for project scope and `~/.copilot/skills` for personal
 scope.
 
+The native `gh skill install` command is available. An authenticated v1.0.0 smoke test found that the
+repository's `skill/SKILL.md` path installs this release as `skill`, even with `--dir`, instead of the
+canonical `humanise` directory required by its metadata. Use the npm command above until the repository
+adopts a canonical `skills/humanise/` source layout for a future release.
+
 ## OpenCode
 
 ```sh
