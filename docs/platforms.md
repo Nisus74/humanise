@@ -18,8 +18,8 @@ The installer uses personal scope by default. Add `--project` for the project pa
 ## Codex
 
 ```sh
-node cli/bin/cli.js install --provider=codex
-node cli/bin/cli.js doctor --provider=codex
+npx humanise install --provider=codex
+npx humanise doctor --provider=codex
 ```
 
 Start a new task if the skill list was already loaded. Invoke `$humanise rewrite`, `$humanise guide`
@@ -33,7 +33,7 @@ humanise to work on this repository; it does not install the skill for unrelated
 For a direct personal skill:
 
 ```sh
-node cli/bin/cli.js install --provider=claude-code
+npx humanise install --provider=claude-code
 ```
 
 Invoke `/humanise rewrite` or let Claude select it from the request.
@@ -54,7 +54,7 @@ update does not replace it.
 ## Cursor
 
 ```sh
-node cli/bin/cli.js install --provider=cursor
+npx humanise install --provider=cursor
 ```
 
 Restart or reload the workspace if the skill does not appear. Invoke `/humanise rewrite` or ask Cursor
@@ -71,7 +71,7 @@ gemini skills install https://github.com/Nisus74/humanise
 Or use the bundled installer:
 
 ```sh
-node cli/bin/cli.js install --provider=gemini
+npx humanise install --provider=gemini
 ```
 
 Enable the skill in the session if required, then ask normally. The root `GEMINI.md` configures work
@@ -80,7 +80,7 @@ inside this source repository only.
 ## GitHub Copilot
 
 ```sh
-node cli/bin/cli.js install --provider=github
+npx humanise install --provider=github
 ```
 
 This uses `.github/skills` for project scope and `~/.copilot/skills` for personal scope. GitHub's
@@ -90,7 +90,7 @@ discover directly.
 ## OpenCode
 
 ```sh
-node cli/bin/cli.js install --provider=opencode
+npx humanise install --provider=opencode
 ```
 
 OpenCode also recognises the shared `.agents/skills` locations, but the installer uses its native
@@ -107,7 +107,7 @@ the private profile location.
 Run:
 
 ```sh
-node cli/bin/cli.js doctor --provider=<name> [--project]
+npx humanise doctor --provider=<name> [--project]
 ```
 
 If several agent marker directories exist, the installer refuses to guess. Pass `--provider`

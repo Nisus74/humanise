@@ -1,13 +1,21 @@
 # Contributing to humanise
 
-Thanks for your interest in contributing. Here's what you need to know.
+Contributions are welcome when they make humanise easier to install, safer to ship or better at
+preserving a writer's meaning and voice.
 
-## How to contribute
+## Set up
 
-1. Fork the repository
-2. Create a branch: `git checkout -b your-feature-name`
-3. Make your changes
-4. Open a pull request with a clear description of what you've changed and why
+You need Node 18 or later, Python 3 and [`pre-commit`](https://pre-commit.com/#install).
+
+```sh
+git clone https://github.com/<your-name>/humanise.git
+cd humanise
+pre-commit install --hook-type pre-commit --hook-type pre-push
+npm run quality
+```
+
+Fork the repository, create a focused branch and show the failure or user need your change addresses.
+Run `npm run quality` before opening a pull request.
 
 ## Reporting bugs
 
@@ -22,6 +30,9 @@ Use the [feature request template](.github/ISSUE_TEMPLATE/feature_request.md) to
 - Keep PRs focused: one change per PR
 - Include a clear description of the problem you're solving
 - If you're adding or changing skill behaviour, update the README accordingly
+- List the exact checks you ran and their results
+- Do not add a dependency or lockfile without prior maintainer agreement
+- Never include a real voice profile, writing sample, credential or local configuration
 
 ## What's engine vs profile
 
@@ -41,7 +52,7 @@ Promote only if the change improves at least one split and degrades neither. CI 
 
 ## Good first contributions
 
-- **A dialect pack.** Add `skill/references/dialect-<code>.md` plus the spelling lists in `writing_checks.py`. en-CA, en-IE and others are wanted.
+- **A language or regional pack.** Start with [Adding a language](docs/languages.md) and agree on the evidence and fluent review plan before implementation.
 - **A channel playbook.** Add a row to the mapping table or a full entry in `skill/references/channel-playbooks.md`.
 - **A slop word or a 2026-era tell.** Add it to `skill/references/ai-slop-dictionary.md` and the relevant list in `writing_checks.py`, with a fixture.
 
@@ -49,9 +60,11 @@ Promote only if the change improves at least one split and degrades neither. CI 
 
 humanise works across AI tools (Claude Code, Codex, Gemini, Antigravity and others), so the protections that matter run at the git and CI layers, not inside any one tool.
 
-After cloning, turn on the local hooks once with `pre-commit install`. Every commit is then checked by [gitleaks](https://github.com/gitleaks/gitleaks) (no secrets) and a zero-dependency check (the CLI stays Node built-ins, the checker stays Python stdlib). CI runs the same checks on every push and pull request, and adds dependency review and CodeQL once the repository is public, so anything missed locally is still caught before merge.
+The pre-commit hook scans secrets and rejects dependencies. The pre-push hook runs the same quality
+gate as CI: version consistency, build validation, package privacy and the held-in regression suite.
 
-Never commit a real credential; use an environment variable or a gitignored file. To add a dependency, change `scripts/check-no-deps.mjs` in the same PR so the call is explicit and reviewed. Claude Code users also get these guards as instant local feedback via `.claude/`; other tools rely on the git and CI layers.
+Never commit a real credential. Use an environment variable or a gitignored file. Claude Code and
+Codex provide earlier local warnings, but Git hooks and CI are the shared enforcement layer.
 
 To report a vulnerability, follow [SECURITY.md](SECURITY.md).
 

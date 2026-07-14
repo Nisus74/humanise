@@ -1,14 +1,19 @@
 # humanise
 
 [![version](https://img.shields.io/badge/version-1.0.0-E9764A)](https://github.com/Nisus74/humanise/releases) <!-- x-release-please-version -->
+[![license](https://img.shields.io/badge/license-MIT-68B42E)](LICENSE)
+[![CI](https://github.com/Nisus74/humanise/actions/workflows/ci.yml/badge.svg)](https://github.com/Nisus74/humanise/actions/workflows/ci.yml)
 
-humanise helps AI write like a specific person, without changing what that person means.
+An open-source AI writing skill that preserves what you mean and learns how you write.
 
 It combines a shared writing engine with private evidence from your real writing. The engine removes
 generic model habits. Your profile teaches it what you notice, how you make a case, how you handle a
 reader and where you stop.
 
 Works with Claude Code, Codex, Cursor, Gemini CLI, GitHub Copilot and OpenCode.
+
+If humanise improves something you would otherwise have sent, [star the repository](https://github.com/Nisus74/humanise).
+Stars help other writers find it.
 
 ## See the difference
 
@@ -24,36 +29,22 @@ humanise starts with the facts and the writer's judgement:
 > We cut the signup form from nine fields to three last Tuesday. Activation moved from 41% to 58% in
 > two weeks. The engineering was straightforward. Agreeing on what we could stop asking took longer.
 
-The improvement is not a collection of fake quirks. The second version has a point, evidence and a
-decision a person actually made.
+The second version has a point, evidence and a decision a person actually made. It does not add fake
+quirks or change the underlying claim.
 
 ## Install
 
-The npm package is not published yet, so install from the repository today:
+Node 18 or later and Python 3 are required. Install humanise for your agent, then check the result:
 
 ```sh
-git clone https://github.com/Nisus74/humanise.git
-cd humanise
-npm run build
+npx humanise install --provider=codex
+npx humanise doctor --provider=codex
 ```
 
-Choose your agent. User scope is the default and keeps your voice available across projects:
-
-```sh
-node cli/bin/cli.js install --provider=codex
-node cli/bin/cli.js install --provider=claude-code
-node cli/bin/cli.js install --provider=cursor
-node cli/bin/cli.js install --provider=gemini
-node cli/bin/cli.js install --provider=github
-node cli/bin/cli.js install --provider=opencode
-```
-
-Use `--project` only when the skill should apply to one repository. The installer protects the private
-profile through Git's local exclude file. Run the diagnostic after installation:
-
-```sh
-node cli/bin/cli.js doctor --provider=codex
-```
+Replace `codex` with `claude-code`, `cursor`, `gemini`, `github` or `opencode`. Personal scope is the
+default, so your voice is available across projects. Add `--project` for one repository. The installer
+refuses to guess when several supported agents are present, and `doctor` checks discovery and profile
+privacy after installation.
 
 Exact paths, native installers and invocation syntax are in [the platform guide](docs/platforms.md).
 
@@ -164,12 +155,38 @@ humanise voiceprint --status
 humanise build
 ```
 
-After the package is published, `npx humanise <command>` will run the same interface.
+Run any command as `npx humanise <command>`.
 
 ## Contributing
 
-Improve the shared engine with evidence that generalises. Keep personal samples and edit history out
-of pull requests. Start with [CONTRIBUTING.md](CONTRIBUTING.md) and [Development](docs/DEVELOP.md).
+Good first contributions include a clearer installation step, a provider smoke test, a channel
+playbook or a regional English pack. Engine changes need evidence and regression coverage. Personal
+voice samples and edit history never belong in a pull request.
+
+Start with [Contributing](CONTRIBUTING.md) and run `npm run quality` before opening a PR.
+
+## Languages
+
+humanise supports English today, with Australian, British and American guidance. Adding another
+language needs native writing evidence, language-specific model tells, cultural calibration, checker
+behaviour and fluent review. Read [Adding a language](docs/languages.md) before proposing one.
+
+## Support humanise
+
+Stars help people discover the project. Contributions improve the shared engine. If humanise has
+saved you real editing time, you can also [buy me a coffee](https://buymeacoffee.com/Nisus74).
+
+## FAQ
+
+### Is humanise an AI detector bypass?
+
+No. The goal is faithful writing in a specific person's voice. Detector scores are unreliable and
+are not the product target.
+
+### Does my writing get uploaded?
+
+No. The bundled checker is local and uses no model or API key. The AI host you run humanise through
+still has its own data policy, so review that separately.
 
 ## License
 

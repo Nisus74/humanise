@@ -47,6 +47,8 @@ test("README badge drift fails", () => {
 });
 
 test("canonical version must be strict SemVer", () => {
-  const state = readVersionState(fixture({ package: "1.0" }));
-  assert.match(versionProblems(state)[0], /strict SemVer/);
+  for (const version of ["1.0", "1.0.0-01", "1.0.0-alpha..1", "1.0.0-alpha."]) {
+    const state = readVersionState(fixture({ package: version }));
+    assert.match(versionProblems(state)[0], /strict SemVer/, version);
+  }
 });

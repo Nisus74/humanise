@@ -1,4 +1,4 @@
-name: security
+name: Security
 
 on:
   push:
@@ -30,12 +30,3 @@ jobs:
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       - uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4
-
-  no-new-deps:
-    # Enforces the zero-dependency invariant for EVERY contributor, whatever AI
-    # tool or editor they use. The local AI-tool hooks only cover their own tool;
-    # this and the pre-commit hook run for everyone. Node is preinstalled on the runner.
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-      - run: node scripts/check-no-deps.mjs

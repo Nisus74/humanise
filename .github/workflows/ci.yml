@@ -1,4 +1,4 @@
-name: humanise CI
+name: Quality
 
 on:
   push:
@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 jobs:
-  selftest:
+  quality:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -19,13 +19,16 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: "20"
-      - name: Build and validate distributable skill
+          package-manager-cache: false
+      - name: Run contributor quality gate
+        run: npm run quality
+      - name: Install and run the actual package
         run: |
-          npm run build
-          npm run validate
-          npm run check:deps
-          npm run check:package-privacy
-      - name: Held-in regression suite (the acceptance gate)
-        run: |
-          cd skill/evals/assertions
-          python3 selftest.py
+          TARBALL="$(npm pack --ignore-scripts --silent --cache "$RUNNER_TEMP/npm-cache")"
+          CONSUMER="$(mktemp -d)"
+          trap 'rm -rf -- "$CONSUMER" "$TARBALL"' EXIT
+          npm install --prefix "$CONSUMER" "./$TARBALL" --ignore-scripts --no-package-lock \
+            --cache "$RUNNER_TEMP/consumer-cache"
+          EXPECTED="humanise $(node -p "require('./package.json').version")"
+          ACTUAL="$(node "$CONSUMER/node_modules/humanise/cli/bin/cli.js" version)"
+          test "$ACTUAL" = "$EXPECTED"

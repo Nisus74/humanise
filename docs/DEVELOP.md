@@ -90,7 +90,15 @@ If you have cloned this repo and want to work on a profile in place (rather than
 
 ## Release
 
-- Bump `version` in `package.json`.
-- `npm run validate` passes (also runs automatically in `prepack`).
-- `npm publish` (the `prepack` script rebuilds `dist/` and validates it before packing the tarball).
-- Tag the release once CI is green.
+Use conventional commit subjects. Release Please prepares the version pull request and updates the
+package, plugin, marketplace, README badge and changelog together.
+
+Before approving that pull request, run:
+
+```sh
+npm run quality
+npm pack --dry-run
+```
+
+Merge only when CI has installed and run the packed artefact. Create the GitHub release from the
+verified commit, then publish the same version to npm. Never reuse or move a published version tag.

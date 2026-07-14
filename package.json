@@ -1,7 +1,7 @@
 {
   "name": "humanise",
   "version": "1.0.0",
-  "description": "Make AI-generated writing sound like a specific human wrote it. A shared anti-slop engine plus your own voice profile (body and soul). Cross-platform skill and CLI.",
+  "description": "Open-source AI writing skill that preserves meaning and learns your voice across Claude Code, Codex, Cursor, Gemini, Copilot and OpenCode.",
   "author": "Nisus74",
   "license": "MIT",
   "homepage": "https://github.com/Nisus74/humanise",
@@ -13,10 +13,13 @@
     "writing",
     "ai",
     "anti-slop",
+    "agent-skills",
+    "ai-writing",
     "skills",
     "voice",
     "editor",
     "humanise",
+    "writing-assistant",
     "claude",
     "codex",
     "gemini"
@@ -30,7 +33,6 @@
   },
   "files": [
     "cli/",
-    "scripts/",
     "dist/",
     ".claude-plugin/",
     "README.md",
@@ -41,8 +43,9 @@
     "check:version": "node scripts/check-version-sync.mjs",
     "validate": "node scripts/validate-skill.mjs",
     "check:package-privacy": "node scripts/check-package-privacy.mjs",
-    "prepack": "node scripts/build.mjs && node scripts/validate-skill.mjs && node scripts/check-package-privacy.mjs",
+    "prepack": "npm run check:version && npm run check:deps && npm run build && npm run validate && npm run check:package-privacy",
     "test": "cd skill/evals/assertions && python3 selftest.py",
-    "check:deps": "node scripts/check-no-deps.mjs"
+    "check:deps": "node scripts/check-no-deps.mjs",
+    "quality": "npm run check:version && npm run check:deps && npm run build && npm run validate && npm run check:package-privacy && npm test"
   }
 }
