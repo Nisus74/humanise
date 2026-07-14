@@ -2,6 +2,18 @@
 
 Auditable lineage of engine changes, per `evals/self-harness-loop.md`. Each entry names the target, surface, evidence, and eval result. Newest first.
 
+## 2026-07-14: beginner install and configuration guide
+
+**Target:** first-time users could install the package but had no complete path from "what is a skill?"
+to a configured, personalised result. Vendor guidance also combined Gemini and Antigravity, omitted the
+universal installer and described GitHub CLI support as future work. **Surface:** added a six-step README
+quickstart and a detailed getting-started guide; documented installation, discovery, invocation,
+configuration, privacy and troubleshooting for Codex, Claude Code, Cursor, Gemini CLI, GitHub Copilot,
+OpenCode, Antigravity and universal Agent Skills hosts; added an explicit Antigravity provider for the
+next npm release; pinned released commands to 1.0.0; and added provider, real-install and documentation
+regression tests. **Evidence:** a first-time-user audit of the published package and GitHub repository.
+**Result:** writing engine unchanged; verification recorded in the release pull request.
+
 ## 2026-07-13 — meaning-first engine, progressive onboarding and safe cross-platform install
 
 **Target:** first use required a full corpus before value was visible, the live prompt over-weighted anti-AI quotas, provider detection could choose the wrong host, some personal install paths were incorrect, and a project profile could be committed despite the privacy promise. **Surface:** replaced the live workflow with a shorter evidence hierarchy, meaning contract, reader model, three intervention strengths, confidence-aware sample selection, four-pass drafting and fidelity-first verification; added `references/meaning-and-voice.md`; softened stylistic counts into advisory review prompts; added voice decisions, negative examples and relationship overlays to the profile template; redesigned `init` around one-sample contrastive calibration and later progressive depth; updated fingerprint and corpus guidance to prefer decisions and draft-to-final edits over surface mimicry. Reworked the installer with separate project and personal paths, safe user-scope default, ambiguity refusal, local Git exclusion for project profiles, `doctor`, canonical `config.yml`, and accurate provider invocation. Added a Claude marketplace catalogue, persistent plugin-profile routing, Codex UI metadata, and rewrote the README and user docs around first value, privacy and exact host instructions. The npm package now ships one sanitised portable artefact rather than duplicate provider copies; a release privacy check prevents source profiles, local config and caches from entering the package. **Evidence:** direct repository onboarding and installation audit against current Codex, Claude Code, Gemini CLI, GitHub Copilot and OpenCode documentation, plus the user's request to bring every category to 10/10. A dry run caught the prior npm whitelist including the maintainer's private profile despite Git ignore rules, which drove the sanitised-artifact release design. **Result:** `npm run build`, spec validation, Claude marketplace validation, Codex skill validation, dependency check, package privacy check and the full held-in self-test pass. Project-install smoke tests confirmed canonical config creation, local Git exclusion, untracked-profile diagnostics and refusal to guess across multiple detected agents. The npm dry run contains no `skill/profile`, `config.yml`, bytecode or cache files and reduced the packed size from 523 KB to 189 KB. **Gate:** authorised engine and product change; Python detectors and held-out evaluation material were not edited.

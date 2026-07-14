@@ -1,7 +1,7 @@
-# Voice setup
+# Deepen your voice profile
 
-Start with [Getting started](getting-started.md). This page explains how to turn a one-sample
-calibration into a reliable multi-channel profile.
+Start with [Getting started](getting-started.md) and get one useful rewrite first. This page takes the
+next step: turning that one-sample calibration into a reliable multi-channel profile.
 
 ## The first three minutes
 
@@ -76,7 +76,7 @@ register, profile directory and common channels there. Do not create a second co
 Run the installation diagnostic whenever the skill moves:
 
 ```sh
-humanise doctor --provider=<name> [--project]
+npx humanise@1.0.0 doctor --provider=<name> [--project]
 ```
 
 For a project install, confirm the profile does not appear in `git status` and is not returned by

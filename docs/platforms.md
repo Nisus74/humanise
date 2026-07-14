@@ -1,42 +1,48 @@
 # Platforms
 
-humanise uses the same skill on every host. Installation paths and invocation syntax differ.
+Humanise uses the same writing skill on every host. The install path and the way you invoke it differ.
 
 ## Path reference
 
-| Host | Project skill | Personal skill | Explicit invocation |
-| --- | --- | --- | --- |
-| Codex | `.agents/skills/humanise` | `~/.agents/skills/humanise` | `$humanise` |
-| Claude Code | `.claude/skills/humanise` | `~/.claude/skills/humanise` | `/humanise` |
-| Cursor | `.cursor/skills/humanise` | `~/.cursor/skills/humanise` | `/humanise` |
-| Gemini CLI | `.gemini/skills/humanise` | `~/.gemini/skills/humanise` | enable, then ask normally |
-| GitHub Copilot | `.github/skills/humanise` | `~/.copilot/skills/humanise` | `/humanise` where supported |
-| OpenCode | `.opencode/skills/humanise` | `~/.config/opencode/skills/humanise` | load or ask normally |
+| Host | Installer provider | Project install | Personal install | Invoke |
+| --- | --- | --- | --- | --- |
+| Codex | `codex` | `.agents/skills/humanise` | `~/.agents/skills/humanise` | `$humanise` |
+| Claude Code | `claude-code` | `.claude/skills/humanise` | `~/.claude/skills/humanise` | `/humanise` |
+| Cursor | `cursor` | `.cursor/skills/humanise` | `~/.cursor/skills/humanise` | `/humanise` |
+| Gemini CLI | `gemini` | `.gemini/skills/humanise` | `~/.gemini/skills/humanise` | enable, then ask |
+| GitHub Copilot | `github` | `.github/skills/humanise` | `~/.copilot/skills/humanise` | `/humanise` where supported |
+| OpenCode | `opencode` | `.opencode/skills/humanise` | `~/.config/opencode/skills/humanise` | ask it to use humanise |
+| Antigravity | `antigravity` (next npm release) | `.agents/skills/humanise` | `~/.gemini/config/skills/humanise` | mention humanise by name |
+| Other Agent Skills hosts | `universal` | `humanise` | `~/.agents/skills/humanise` | ask the agent to use humanise |
 
-The installer uses personal scope by default. Add `--project` for the project path.
+The installer uses personal scope by default. Add `--project` to install for the current repository.
+The commands below pin the released npm package so they produce the documented 1.0.0 setup.
 
 ## Codex
 
 ```sh
-npx humanise install --provider=codex
-npx humanise doctor --provider=codex
+npx humanise@1.0.0 install --provider=codex
+npx humanise@1.0.0 doctor --provider=codex
 ```
 
-Start a new task if the skill list was already loaded. Invoke `$humanise rewrite`, `$humanise guide`
-or `$humanise init`. Codex may also select the skill automatically for writing tasks.
+Start a new task if Humanise does not appear after installation. Invoke `$humanise rewrite`,
+`$humanise guide` or `$humanise init`. Codex may also select the skill automatically for a matching
+writing request. See the [official Codex skills guide](https://learn.chatgpt.com/docs/build-skills).
 
-Opening this source repository in Codex is different from installing it. The root `AGENTS.md` applies
-humanise to work on this repository; it does not install the skill for unrelated projects.
+Opening this source repository in Codex is different from installing it. This repository's
+`AGENTS.md` applies Humanise here, but does not install it for other work.
 
 ## Claude Code
 
 For a direct personal skill:
 
 ```sh
-npx humanise install --provider=claude-code
+npx humanise@1.0.0 install --provider=claude-code
+npx humanise@1.0.0 doctor --provider=claude-code
 ```
 
-Invoke `/humanise rewrite` or let Claude select it from the request.
+Invoke `/humanise rewrite`, or let Claude select the skill from your request. See the
+[official Claude Code skills guide](https://code.claude.com/docs/en/skills).
 
 For the marketplace plugin:
 
@@ -46,70 +52,100 @@ For the marketplace plugin:
 /reload-plugins
 ```
 
-Plugin skills are namespaced. Invoke `/humanise:humanise rewrite`. Use the direct skill when you want
-the simplest personal installation. Use the plugin when you want managed updates and marketplace
-distribution. The plugin keeps its private profile in Claude's persistent plugin-data directory so an
-update does not replace it.
+Invoke `/humanise:humanise rewrite`. The direct skill is the simpler personal installation. The
+plugin provides managed updates and keeps its private profile in Claude's persistent
+`${CLAUDE_PLUGIN_DATA}` directory.
 
 ## Cursor
 
 ```sh
-npx humanise install --provider=cursor
+npx humanise@1.0.0 install --provider=cursor
+npx humanise@1.0.0 doctor --provider=cursor
 ```
 
-Restart or reload the workspace if the skill does not appear. Invoke `/humanise rewrite` or ask Cursor
-to use humanise.
+Reload the workspace if Humanise does not appear. Invoke `/humanise rewrite`, or ask Cursor to use
+Humanise. See the [official Cursor skills guide](https://cursor.com/docs/skills).
 
-## Gemini CLI and Antigravity
+## Gemini CLI
 
-Use Gemini's native installer:
+Use the Humanise installer:
+
+```sh
+npx humanise@1.0.0 install --provider=gemini
+npx humanise@1.0.0 doctor --provider=gemini
+```
+
+Gemini also has a native installer:
 
 ```sh
 gemini skills install https://github.com/Nisus74/humanise
 ```
 
-Or use the bundled installer:
-
-```sh
-npx humanise install --provider=gemini
-```
-
-Enable the skill in the session if required, then ask normally. The root `GEMINI.md` configures work
-inside this source repository only.
+Run `/skills reload` if the session was already open. Enable Humanise if prompted, then ask Gemini to
+use it for the writing task. See the
+[official Gemini CLI skills guide](https://geminicli.com/docs/cli/using-agent-skills/).
 
 ## GitHub Copilot
 
+Use the Humanise installer:
+
 ```sh
-npx humanise install --provider=github
+npx humanise@1.0.0 install --provider=github
+npx humanise@1.0.0 doctor --provider=github
 ```
 
-This uses `.github/skills` for project scope and `~/.copilot/skills` for personal scope. GitHub's
-`gh skill` commands are another option once this repository is published in a layout the command can
-discover directly.
+Or, with GitHub CLI 2.90 or later, install the pinned skill directly:
+
+```sh
+gh skill install Nisus74/humanise skill/SKILL.md --agent github-copilot --scope user --pin v1.0.0
+```
+
+The Humanise installer uses `.github/skills` for project scope and `~/.copilot/skills` for personal
+scope. See the [official GitHub CLI skill installer](https://cli.github.com/manual/gh_skill_install).
 
 ## OpenCode
 
 ```sh
-npx humanise install --provider=opencode
+npx humanise@1.0.0 install --provider=opencode
+npx humanise@1.0.0 doctor --provider=opencode
 ```
 
-OpenCode also recognises the shared `.agents/skills` locations, but the installer uses its native
-paths so ownership is clear.
+The installer uses OpenCode's native paths. Ask OpenCode to use Humanise for your writing task. See the
+[official OpenCode skills guide](https://opencode.ai/docs/skills).
 
-## Universal copy
+## Antigravity
 
-If a host can read Agent Skills but has no adapter here, copy `skill/` into a supported skill directory
-as `humanise/`. Confirm that the host discovers `SKILL.md`, supports the referenced files and can access
-the private profile location.
+Install the pinned 1.0.0 skill with GitHub CLI 2.90 or later:
+
+```sh
+gh skill install Nisus74/humanise skill/SKILL.md --agent antigravity --scope user --pin v1.0.0
+gh skill list --agent antigravity --scope user
+```
+
+The npm 1.0.0 package predates the explicit `antigravity` provider. This branch adds that provider for
+the next npm release. Until then, use the pinned GitHub CLI command above. GitHub lists Antigravity as
+a supported host in its [skill installer reference](https://cli.github.com/manual/gh_skill_install).
+
+## Universal install
+
+For another host that supports Agent Skills:
+
+```sh
+npx humanise@1.0.0 install --provider=universal
+npx humanise@1.0.0 doctor --provider=universal
+```
+
+This installs Humanise in the shared personal Agent Skills directory. If your host uses a different
+directory, copy the installed `humanise/` folder there and confirm it discovers `SKILL.md`.
 
 ## Troubleshooting
 
-Run:
+Run the matching diagnostic:
 
 ```sh
-npx humanise doctor --provider=<name> [--project]
+npx humanise@1.0.0 doctor --provider=<name> [--project]
 ```
 
 If several agent marker directories exist, the installer refuses to guess. Pass `--provider`
-explicitly. If a skill was installed during an open session, restart, reload plugins or start a new
-task so the host refreshes discovery.
+explicitly. If you installed during an open session, restart the task, reload plugins or refresh the
+host's skill list.

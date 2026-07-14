@@ -7,6 +7,10 @@ Codex:                $humanise rewrite
 Claude direct skill:  /humanise rewrite
 Claude plugin:        /humanise:humanise rewrite
 Cursor:               /humanise rewrite
+Gemini CLI:           enable humanise, then ask normally
+GitHub Copilot:       /humanise rewrite where supported
+OpenCode:             ask the agent to use humanise
+Antigravity:          mention humanise by name
 Other hosts:          ask the agent to use humanise in rewrite mode
 ```
 
