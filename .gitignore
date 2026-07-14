@@ -35,6 +35,7 @@ skill/config.yml
 # Local agent workspaces and durable execution state
 /.worktrees/
 /.superpowers/
+/docs/superpowers/
 
 # Personal, per-developer Claude guidance (not shared)
 CLAUDE.local.md

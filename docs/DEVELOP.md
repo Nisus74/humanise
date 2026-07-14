@@ -44,9 +44,12 @@ artefacts only.
 
 ## Test
 
+```sh
+npm test
 ```
-npm test             # runs the held-in selftest (Python)
-```
+
+This builds the distributable skill, runs the Node tests for provider mapping, installation, privacy
+and onboarding documentation, then runs the held-in Python engine selftest.
 
 The acceptance gate for engine changes is in `skill/evals/self-harness-loop.md`: the selftest stays green and the held-out voice test is not regressed. CI runs the selftest on every PR.
 
