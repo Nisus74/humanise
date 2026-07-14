@@ -10,7 +10,7 @@
       "name": "humanise",
       "source": "./",
       "description": "Rewrite and draft prose in a specific person's voice.",
-      "version": "0.2.0",
+      "version": "1.0.0",
       "category": "Productivity"
     }
   ]

@@ -1,5 +1,7 @@
 # humanise
 
+[![version](https://img.shields.io/badge/version-1.0.0-E9764A)](https://github.com/Nisus74/humanise/releases) <!-- x-release-please-version -->
+
 humanise helps AI write like a specific person, without changing what that person means.
 
 It combines a shared writing engine with private evidence from your real writing. The engine removes
