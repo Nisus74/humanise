@@ -36,7 +36,7 @@ Python runs `detect`, `fingerprint` and the deterministic writing checks.
 | Gemini CLI | `gemini` | Enable the skill, then ask normally |
 | GitHub Copilot | `github` | `/humanise rewrite` where supported |
 | OpenCode | `opencode` | Ask it to use humanise |
-| Antigravity | Native GitHub CLI install | Mention humanise by name |
+| Antigravity 1.0.0 | `universal` | Mention humanise by name |
 | Another Agent Skills host | `universal` | Ask it to use humanise |
 
 Personal scope is the default. Choose it when you want one profile across projects. Project scope uses
@@ -45,8 +45,8 @@ have a reason to keep the skill in one repository.
 
 ## Step 3: install humanise
 
-This example uses Codex. Replace `codex` with `claude-code`, `cursor`, `gemini`, `github`, `opencode` or
-`universal` for another host.
+This example uses Codex. Replace `codex` with `claude-code`, `cursor`, `gemini`, `github` or `opencode`
+for another host. Use `universal` for Antigravity with npm 1.0.0.
 
 ```sh
 npx humanise@1.0.0 install --provider=codex
@@ -59,11 +59,15 @@ Installed humanise for codex (global) -> /your/home/.agents/skills/humanise
 Next in codex: $humanise. Ask it to set up humanise.
 ```
 
-Antigravity uses GitHub CLI 2.90.0 or later with the released `v1.0.0` skill:
+The universal install goes to `~/.agents/skills/humanise`, which Antigravity discovers. Antigravity CLI
+users who need its shared global directory can copy the installed skill:
 
 ```sh
-gh skill install Nisus74/humanise skill/SKILL.md --agent antigravity --scope user --pin v1.0.0
+mkdir -p ~/.gemini/config/skills
+cp -R ~/.agents/skills/humanise ~/.gemini/config/skills/humanise
 ```
+
+The next npm release adds `--provider=antigravity` so this copy step will no longer be necessary.
 
 ## Step 4: check the installation
 
@@ -75,14 +79,6 @@ npx humanise@1.0.0 doctor --provider=codex
 
 `OK` should appear beside the skill, profile template and configuration template. `NOT SET UP` beside
 the private profile is expected before Step 6.
-
-For the native Antigravity installation, verify discovery with:
-
-```sh
-gh skill list --agent antigravity --scope user
-```
-
-The output should include `humanise`, pinned to `v1.0.0`.
 
 ## Step 5: get a useful rewrite before setup
 
@@ -173,9 +169,6 @@ npx humanise@1.0.0 doctor --provider=codex
 The private profile should now report `OK`. For project scope, also run `git status` and confirm neither
 `profile/` nor `config.yml` appears. Never add credentials or writing you are not allowed to share with
 your chosen AI host.
-
-For a native Antigravity installation, repeat the `gh skill list` check and ask Antigravity to confirm
-the profile and `config.yml` paths it created.
 
 ## Troubleshooting
 

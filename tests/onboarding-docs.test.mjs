@@ -50,15 +50,13 @@ test("platform guide covers every installer provider", () => {
   assert.match(PLATFORMS, /^## Antigravity$/m);
 });
 
-test("released commands are pinned and Antigravity uses the supported 1.0.0 path", () => {
+test("released commands are pinned and Antigravity uses the supported 1.0.0 fallback", () => {
   const docs = `${README}\n${GETTING_STARTED}\n${PLATFORMS}`;
   assert.match(docs, /npx humanise@1\.0\.0 install --provider=codex/);
-  assert.match(
-    docs,
-    /gh skill install Nisus74\/humanise skill\/SKILL\.md --agent antigravity --scope user --pin v1\.0\.0/,
-  );
-  assert.match(docs, /gh skill list --agent antigravity --scope user/);
+  assert.match(docs, /npx humanise@1\.0\.0 install --provider=universal/);
+  assert.match(docs, /\.gemini\/config\/skills\/humanise/);
   assert.doesNotMatch(docs, /humanise@1\.0\.0 install --provider=antigravity/);
+  assert.doesNotMatch(docs, /gh skill install Nisus74\/humanise skill\/SKILL\.md/);
 });
 
 test("npm README links resolve outside the repository", () => {

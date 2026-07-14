@@ -94,14 +94,8 @@ npx humanise@1.0.0 install --provider=github
 npx humanise@1.0.0 doctor --provider=github
 ```
 
-Or, with GitHub CLI 2.90 or later, install the pinned skill directly:
-
-```sh
-gh skill install Nisus74/humanise skill/SKILL.md --agent github-copilot --scope user --pin v1.0.0
-```
-
 The Humanise installer uses `.github/skills` for project scope and `~/.copilot/skills` for personal
-scope. See the [official GitHub CLI skill installer](https://cli.github.com/manual/gh_skill_install).
+scope.
 
 ## OpenCode
 
@@ -115,16 +109,23 @@ The installer uses OpenCode's native paths. Ask OpenCode to use Humanise for you
 
 ## Antigravity
 
-Install the pinned 1.0.0 skill with GitHub CLI 2.90 or later:
+For npm 1.0.0, install the universal package that Antigravity can discover:
 
 ```sh
-gh skill install Nisus74/humanise skill/SKILL.md --agent antigravity --scope user --pin v1.0.0
-gh skill list --agent antigravity --scope user
+npx humanise@1.0.0 install --provider=universal
 ```
 
-The npm 1.0.0 package predates the explicit `antigravity` provider. This branch adds that provider for
-the next npm release. Until then, use the pinned GitHub CLI command above. GitHub lists Antigravity as
-a supported host in its [skill installer reference](https://cli.github.com/manual/gh_skill_install).
+Antigravity discovers the resulting `~/.agents/skills/humanise` directory. To make the same installation
+available to Antigravity CLI through its shared global directory, copy it once:
+
+```sh
+mkdir -p ~/.gemini/config/skills
+cp -R ~/.agents/skills/humanise ~/.gemini/config/skills/humanise
+```
+
+The npm 1.0.0 package predates the explicit `antigravity` provider. This branch adds it for the next npm
+release, using Antigravity's global `~/.gemini/config/skills/humanise` path. These locations follow
+Google's [official Antigravity skills guide](https://codelabs.developers.google.com/getting-started-with-antigravity-skills).
 
 ## Universal install
 

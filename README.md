@@ -57,7 +57,7 @@ python3 --version
 | Gemini CLI | `gemini` | Enable the skill, then ask normally |
 | GitHub Copilot | `github` | `/humanise rewrite` where supported |
 | OpenCode | `opencode` | Ask it to use humanise |
-| Antigravity | Native GitHub CLI install | Mention humanise by name |
+| Antigravity 1.0.0 | `universal` | Mention humanise by name |
 | Another Agent Skills host | `universal` | Ask it to use humanise |
 
 ### 3. Install and check it
