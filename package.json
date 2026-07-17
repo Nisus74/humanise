@@ -1,7 +1,7 @@
 {
   "name": "humanise",
   "version": "1.0.0",
-  "description": "Open-source AI writing skill that preserves meaning and learns your voice across Claude Code, Codex, Cursor, Gemini, Copilot, OpenCode and Antigravity.",
+  "description": "An open-source Agent Skill that preserves what you mean and learns how you write from real examples.",
   "author": "Nisus74",
   "license": "MIT",
   "homepage": "https://github.com/Nisus74/humanise",
@@ -47,7 +47,8 @@
     "prepack": "npm run check:version && npm run check:deps && npm run build && npm run validate && npm run check:package-privacy",
     "test:node": "node --test tests/*.test.mjs",
     "test:engine": "cd skill/evals/assertions && python3 selftest.py",
-    "test": "npm run build && npm run test:node && npm run test:engine",
+    "test:package": "node --test tests/package-artifact-smoke.mjs",
+    "test": "npm run build && npm run test:node && npm run test:engine && npm run test:package",
     "check:deps": "node scripts/check-no-deps.mjs",
     "quality": "npm run check:version && npm run check:deps && npm run build && npm run validate && npm run check:package-privacy && npm test"
   }

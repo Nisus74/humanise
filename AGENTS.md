@@ -11,3 +11,12 @@ How to use it:
 The rules in `skill/references/` are the shared engine; the voice in `skill/profile/` is the user's. Don't apply the prose sweep to code, config, or quoted material (see the "When to apply, and when to hold off" section in `skill/SKILL.md`).
 
 Engine changes clear the acceptance gate in `skill/evals/self-harness-loop.md`, runnable end to end via `/humanise improve`. Never tune a change against `skill/evals/holdout-evals.json` (reserved held-out), and treat `skill/profile/learning/` as soul: the user's verbatim edit history, never committed.
+
+## Launch documentation
+
+- Never invent testimonials, metrics or compatibility claims.
+- Keep privacy language technically precise. Separate what Humanise stores locally from what the
+  selected AI host may receive under its own data policy.
+- Do not change the engine during a launch-surface task.
+- Run `npm run quality` before completion.
+- Do not add dependencies without explicit approval.

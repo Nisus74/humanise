@@ -4,18 +4,31 @@
 [![license](https://img.shields.io/badge/license-MIT-68B42E)](LICENSE)
 [![CI](https://github.com/Nisus74/humanise/actions/workflows/ci.yml/badge.svg)](https://github.com/Nisus74/humanise/actions/workflows/ci.yml)
 
-An open-source AI writing skill that preserves what you mean and learns how you write.
+## Your AI should write like you, not like AI.
 
-It combines a shared writing engine with private evidence from your real writing. The engine removes
-generic model habits. Your profile teaches it what you notice, how you make a case, how you handle a
-reader and where you stop.
+An open-source Agent Skill that preserves what you mean and learns how you write from real examples.
 
-Works with Claude Code, Codex, Cursor, Gemini CLI, GitHub Copilot and OpenCode.
+Humanise is for people who use AI to draft or edit important writing and want the result to reflect
+their judgement, evidence and voice. Your agent loads the skill when you ask it to write. Humanise
+protects the point, facts and level of certainty before it changes the style.
 
-If humanise improves something you would otherwise have sent, [star the repository](https://github.com/Nisus74/humanise).
-Stars help other writers find it.
+### Install for Codex
 
-## See the difference
+You need Node.js 18 or later. Python 3 runs the local writing checker and voice tools.
+
+```sh
+npx humanise@1.0.0 install --provider=codex
+npx humanise@1.0.0 doctor --provider=codex
+```
+
+Start a new Codex task and invoke `$humanise rewrite`. [See the illustrative example](#illustrative-example),
+follow the [complete getting-started guide](https://github.com/Nisus74/humanise/blob/main/docs/getting-started.md),
+or check the [compatibility evidence](https://github.com/Nisus74/humanise/blob/main/docs/compatibility.md).
+
+## Illustrative example
+
+The example below is illustrative. It was not produced from a recorded reproducible run, and the
+figures are part of the example. In real use, every fact must come from the writer's brief or source.
 
 An untreated model might write:
 
@@ -29,74 +42,32 @@ humanise starts with the facts and the writer's judgement:
 > We cut the signup form from nine fields to three last Tuesday. Activation moved from 41% to 58% in
 > two weeks. The engineering was straightforward. Agreeing on what we could stop asking took longer.
 
-The second version has a point, evidence and a decision a person actually made. It does not add fake
-quirks or change the underlying claim.
+The intended difference is a specific point supported by supplied evidence. Humanise is instructed to
+preserve the writer's meaning and never invent detail to make the prose feel more human.
 
-## Start here
+## What makes Humanise different
 
-humanise is an Agent Skill: a folder of instructions and supporting files that your AI coding agent can
-load when you ask it to write or edit. Installing it copies that folder into a directory your agent
-already checks. It does not create another account, run a background service or upload your writing.
+- **Preserves meaning before changing style.** The point and facts come first, along with certainty,
+  caveats and the ask.
+- **Learns from real writing evidence.** Samples and draft-to-final edits show Humanise how your
+  judgement and word choices work together.
+- **Models the reader and relationship.** The same writer should sound different with a regulator, a
+  colleague or a close collaborator.
+- **Stores the profile locally.** Your samples, decisions and voice profile stay in the installed skill
+  directory on your machine.
 
-### 1. Check the requirements
+## Start with one result
 
-You need Node.js 18 or later. Python 3 runs the local writing checker and voice tools.
-
-```sh
-node --version
-python3 --version
-```
-
-### 2. Choose your agent
-
-| Agent | Provider name | Invoke after installation |
-| --- | --- | --- |
-| Codex | `codex` | `$humanise rewrite` |
-| Claude Code, direct skill | `claude-code` | `/humanise rewrite` |
-| Cursor | `cursor` | `/humanise rewrite` |
-| Gemini CLI | `gemini` | Enable the skill, then ask normally |
-| GitHub Copilot | `github` | `/humanise rewrite` where supported |
-| OpenCode | `opencode` | Ask it to use humanise |
-| Antigravity 1.0.0 | `universal` | Mention humanise by name |
-| Another Agent Skills host | `universal` | Ask it to use humanise |
-
-### 3. Install and check it
-
-This example installs humanise for Codex in your personal skill directory. Replace `codex` with the
-provider name from the table.
-
-```sh
-npx humanise@1.0.0 install --provider=codex
-npx humanise@1.0.0 doctor --provider=codex
-```
-
-Personal scope is the default and works across projects. Add `--project` to both commands when the
-skill belongs to one repository.
-
-### 4. Get one result before configuring anything
-
-Open or refresh your agent, invoke humanise in `rewrite` mode and paste a paragraph. Ask it to preserve
-the point and facts. A profile is optional for this first pass. Humanise uses conservative engine
-defaults and does not pretend the result already sounds like you.
-
-### 5. Create your private profile
+A profile is optional for the first rewrite. Humanise uses conservative engine defaults and does not
+pretend it already knows your voice. When you are ready to personalise it, initialise a local profile:
 
 ```sh
 npx humanise@1.0.0 init --provider=codex
 ```
 
-Then invoke humanise in `init` mode. Paste one short, redacted piece you wrote and like. Tell it who read
-the piece and what you wanted it to achieve. Choose the closest rewrite and correct anything that feels
-wrong.
-
-### 6. Confirm the personalised result
-
-Run the same rewrite again. The second result should preserve the same meaning while reflecting the
-decisions in your sample. Run `doctor` once more to confirm the profile path and privacy state.
-
-Follow the complete [Getting started guide](https://github.com/Nisus74/humanise/blob/main/docs/getting-started.md)
-for every provider, configuration fields, expected output and troubleshooting. Exact host paths and
-native installers are in the [platform guide](https://github.com/Nisus74/humanise/blob/main/docs/platforms.md).
+The [getting-started guide](https://github.com/Nisus74/humanise/blob/main/docs/getting-started.md)
+covers configuration, one-sample calibration, expected output and troubleshooting without assuming
+you already know how Agent Skills work.
 
 ### Claude Code marketplace plugin
 
@@ -112,7 +83,9 @@ Invoke the plugin with `/humanise:humanise rewrite` or `/humanise:humanise init`
 
 ## Privacy
 
-Your profile may contain emails, drafts and edit history. It is private by design:
+Your profile is stored locally. Humanise itself does not upload it, although the AI host you use still has its own data policy.
+
+Profiles may contain emails, drafts and edit history:
 
 - User-scope installs keep the profile under your home directory.
 - Project installs add the profile and configuration to Git's local exclude file.
@@ -127,7 +100,7 @@ for reporting problems.
 
 Every draft follows the same order:
 
-1. Preserve the point, facts, certainty, caveats and ask.
+1. Preserve the point and facts, the level of certainty, the caveats and the ask.
 2. Model the relationship, reader state and stakes.
 3. Prefer direct samples from the same channel and relationship.
 4. Draft the content and argument before applying surface style.
@@ -202,8 +175,8 @@ are not the product target.
 
 ### Does my writing get uploaded?
 
-No. The bundled checker is local and uses no model or API key. The AI host you run humanise through
-still has its own data policy, so review that separately.
+Humanise itself does not upload your profile. The bundled checker is local and uses no model or API
+key. The AI host you use still has its own data policy, so review that separately.
 
 ## License
 
