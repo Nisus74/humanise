@@ -1,6 +1,8 @@
 # Platforms
 
 Humanise uses the same writing skill on every host. The install path and the way you invoke it differ.
+The [compatibility evidence](https://github.com/Nisus74/humanise/blob/main/docs/compatibility.md)
+records which installer, package and host checks have actually run.
 
 ## Path reference
 

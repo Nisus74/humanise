@@ -3,7 +3,7 @@
   "name": "humanise",
   "displayName": "humanise",
   "version": "1.0.0",
-  "description": "Strip AI tells from writing and draft in a specific person's voice. A shared anti-slop engine plus your own voice profile (body and soul).",
+  "description": "An open-source Agent Skill that preserves what you mean and learns how you write from real examples.",
   "skills": "./skill",
   "author": {
     "name": "Nisus74"

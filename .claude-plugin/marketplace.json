@@ -4,12 +4,12 @@
   "owner": {
     "name": "Nisus74"
   },
-  "description": "Writing tools that remove generic AI patterns and learn the writer's own voice.",
+  "description": "An open-source Agent Skill that preserves what you mean and learns how you write from real examples.",
   "plugins": [
     {
       "name": "humanise",
       "source": "./",
-      "description": "Rewrite and draft prose in a specific person's voice.",
+      "description": "An open-source Agent Skill that preserves what you mean and learns how you write from real examples.",
       "version": "1.0.0",
       "category": "Productivity"
     }
