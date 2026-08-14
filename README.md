@@ -18,7 +18,6 @@ no technical background: follow the
 Everything below this point is for terminal-based coding agents.
 
 ### Install for Codex
-
 You need Node.js 18 or later. Python 3 runs the local writing checker and voice tools.
 
 ```sh
