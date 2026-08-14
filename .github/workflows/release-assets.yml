@@ -1,0 +1,44 @@
+name: Release assets
+
+on:
+  release:
+    types: [created]
+
+# Needs write access to attach a build artifact and then publish the draft release
+# release-please creates (see release-please-config.json's "draft": true). GitHub's
+# immutable releases lock a release's assets the moment it is published, so the asset
+# has to be attached while the release is still a draft; this job also performs the
+# publish step release-please-action no longer does for us.
+permissions:
+  contents: write
+
+jobs:
+  attach-desktop-zip:
+    if: github.event.release.draft == true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "20"
+          package-manager-cache: false
+      - name: Build the skill artifact
+        run: npm run build
+      - name: Package the Claude Desktop zip
+        # dist/humanise is already trimmed by scripts/build.mjs (no profile/, no config.yml).
+        # Zipping from inside dist/ keeps `humanise/` as the archive root, which is what
+        # Claude Desktop's "Upload a skill" flow expects (SKILL.md inside a folder named
+        # after the skill, not nested under skill/ or the whole repository).
+        run: |
+          cd dist
+          zip -rq humanise-claude-desktop.zip humanise -x '*.DS_Store'
+      - name: Attach the zip while the release is still a draft
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: gh release upload "$RELEASE_TAG" dist/humanise-claude-desktop.zip --clobber
+      - name: Publish the release now the asset is attached
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: gh release edit "$RELEASE_TAG" --draft=false

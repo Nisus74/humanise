@@ -4,6 +4,10 @@ Humanise uses the same writing skill on every host. The install path and the way
 The [compatibility evidence](https://github.com/Nisus74/humanise/blob/main/docs/compatibility.md)
 records which installer, package and host checks have actually run.
 
+Claude Desktop and claude.ai install skills through a different, non-CLI mechanism: uploading a zip
+from the app itself rather than running the installer below. See the
+[Claude Desktop setup guide](claude-desktop.md) if that's your host.
+
 ## Path reference
 
 | Host | Installer provider | Project install | Personal install | Invoke |

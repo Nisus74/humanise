@@ -12,8 +12,12 @@ Humanise is for people who use AI to draft or edit important writing and want th
 their judgement, evidence and voice. Your agent loads the skill when you ask it to write. Humanise
 protects the point, facts and level of certainty before it changes the style.
 
-### Install for Codex
+**Using Claude Desktop or the claude.ai website?** You can install humanise with no terminal and
+no technical background: follow the
+[no-terminal setup guide](https://github.com/Nisus74/humanise/blob/main/docs/claude-desktop.md).
+Everything below this point is for terminal-based coding agents.
 
+### Install for Codex
 You need Node.js 18 or later. Python 3 runs the local writing checker and voice tools.
 
 ```sh
