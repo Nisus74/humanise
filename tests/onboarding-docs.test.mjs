@@ -10,6 +10,7 @@ const read = (path) => readFileSync(resolve(ROOT, path), "utf8");
 const README = read("README.md");
 const GETTING_STARTED = read("docs/getting-started.md");
 const PLATFORMS = read("docs/platforms.md");
+const CLAUDE_DESKTOP = read("docs/claude-desktop.md");
 const COMPATIBILITY = existsSync(resolve(ROOT, "docs/compatibility.md"))
   ? read("docs/compatibility.md")
   : "";
@@ -68,6 +69,45 @@ test("getting started covers the complete beginner journey", () => {
   ]) {
     assert.match(GETTING_STARTED, new RegExp(`^## ${heading}$`, "m"));
   }
+});
+
+test("Claude Desktop guide covers the no-terminal journey and is linked from README and platforms", () => {
+  for (const heading of [
+    "What a skill actually is",
+    "Before you start",
+    "Step 1: download humanise",
+    "Step 2: open the Skills screen",
+    "Step 3: upload the zip",
+    "Step 4: turn it on",
+    "Step 5: check it worked",
+    "Personalise it",
+    "Troubleshooting",
+  ]) {
+    assert.match(CLAUDE_DESKTOP, new RegExp(`^## ${heading}$`, "m"));
+  }
+
+  assert.match(
+    README,
+    /\[no-terminal setup guide\]\(https:\/\/github\.com\/Nisus74\/humanise\/blob\/main\/docs\/claude-desktop\.md\)/,
+  );
+  assert.match(PLATFORMS, /\[Claude Desktop setup guide\]\(claude-desktop\.md\)/);
+
+  // Pinned to the interim one-off `claude-desktop-v1` release, not `releases/latest/download/`,
+  // because no automated release currently carries this asset. Once release-assets.yml has
+  // attached the zip to a real versioned release, switch this link (and this assertion) to the
+  // `latest` alias so it tracks the current npm version instead of a fixed, unmaintained tag.
+  assert.match(
+    CLAUDE_DESKTOP,
+    /releases\/download\/claude-desktop-v1\/humanise-claude-desktop\.zip/,
+  );
+
+  // Desktop skills are installed by uploading a zip from the app, not by this repo's npm
+  // installer, so they are deliberately not a `PROVIDERS` entry. Keep it that way: a provider
+  // key implies a CLI install path that Claude Desktop does not have.
+  assert.ok(
+    !Object.keys(PROVIDERS).some((provider) => /desktop/i.test(provider)),
+    "Claude Desktop is not a CLI installer target and must not be added to PROVIDERS",
+  );
 });
 
 test("platform guide covers every installer provider", () => {

@@ -3,15 +3,15 @@
 humanise is one skill with optional mode words. Invocation depends on the host:
 
 ```text
-Codex:                $humanise rewrite
-Claude direct skill:  /humanise rewrite
-Claude plugin:        /humanise:humanise rewrite
-Cursor:               /humanise rewrite
-Gemini CLI:           enable humanise, then ask normally
-GitHub Copilot:       /humanise rewrite where supported
-OpenCode:             ask the agent to use humanise
-Antigravity:          mention humanise by name
-Other hosts:          ask the agent to use humanise in rewrite mode
+Codex:                      $humanise rewrite
+Claude Code, direct skill:  /humanise rewrite
+Claude Code plugin:         /humanise:humanise rewrite
+Cursor:                     /humanise rewrite
+Gemini CLI:                 enable humanise, then ask normally
+GitHub Copilot:             /humanise rewrite where supported
+OpenCode:                   ask the agent to use humanise
+Antigravity:                mention humanise by name
+Other hosts:                ask the agent to use humanise in rewrite mode
 ```
 
 The agent may also select humanise automatically when a request matches the skill description.

@@ -85,8 +85,8 @@ the private profile is expected before Step 6.
 | Agent | First command or request |
 | --- | --- |
 | Codex | `$humanise rewrite` |
-| Claude direct skill | `/humanise rewrite` |
-| Claude marketplace plugin | `/humanise:humanise rewrite` |
+| Claude Code, direct skill | `/humanise rewrite` |
+| Claude Code marketplace plugin | `/humanise:humanise rewrite` |
 | Cursor | `/humanise rewrite` |
 | Gemini CLI | `/skills enable humanise`, then ask it to use humanise |
 | GitHub Copilot | `/humanise rewrite` where supported |

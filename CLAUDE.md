@@ -14,7 +14,7 @@ If a change only helps one person's writing, it's a profile change (their fork).
 - `skill/`: the source skill. This is what ships and installs.
 - `cli/`: the zero-dependency Node CLI (`bin/cli.js`) and the provider map (`providers.mjs`).
 - `scripts/build.mjs`: compiles `skill/` into `dist/<provider>/`. **`dist/` is generated; never hand-edit it.** Edit `skill/` and rebuild.
-- `docs/`: `SETUP.md`, `body-and-soul.md`, `platforms.md`, `DEVELOP.md`.
+- `docs/`: `getting-started.md`, `claude-desktop.md`, `SETUP.md`, `body-and-soul.md`, `platforms.md`, `DEVELOP.md`.
 - The detector is Python (`skill/evals/assertions/writing_checks.py`), standard library only. The CLI shells to it; it is not ported to JS.
 - Tests and evals live in `skill/evals/assertions/`: `selftest.py` is the held-in battery (`npm test`); `run_all.py` runs the full `evals.json` suite into `benchmark.json`. (Top-level `tests/` is a placeholder.)
 - `skill/config.example.yml`: the per-user engine config to copy to `skill/config.yml` (gitignored). Sets dialect, register, channels and a custom slop overlay.
